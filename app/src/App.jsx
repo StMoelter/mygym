@@ -1,7 +1,8 @@
-import { useLayoutEffect, useState } from "react";
-import { Trans, useTranslation } from "react-i18next";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import styles from "./App.module.css";
 import { loadGyms, saveGyms } from "./storage/gymStorage.js";
+import { loadUser, saveUser } from "./storage/userStorage.js";
 
 const initialGyms = [
   { id: "pulse-arena", name: "Pulse Arena" },
@@ -28,12 +29,21 @@ export default function App() {
   const [newGymName, setNewGymName] = useState("");
   const [editing, setEditing] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [profile, setProfile] = useState(() => loadUser({ id: "primary-user", name: "" }));
+  const [profileDraft, setProfileDraft] = useState(() => loadUser({ id: "primary-user", name: "" }));
   useLayoutEffect(() => {
     saveGyms(gyms);
   }, [gyms]);
 
-  const focusRotation = t("metrics.focus.values", { returnObjects: true });
-  const highlightItems = t("highlights.items", { returnObjects: true });
+  useLayoutEffect(() => {
+    saveUser(profile);
+  }, [profile]);
+
+  useEffect(() => {
+    if (isSettingsOpen) {
+      setProfileDraft(profile);
+    }
+  }, [isSettingsOpen, profile]);
   const totalGyms = gyms.length;
   const gymSummary = t("management.list.summary", { count: totalGyms });
 
@@ -110,41 +120,48 @@ export default function App() {
   }
 
   const resolvedLanguage = i18n.resolvedLanguage ?? i18n.language;
+  const displayName = profile?.name?.trim() ? profile.name : t("profile.defaultName");
+
+  function handleProfileDraftChange(event) {
+    const { value } = event.target;
+    setProfileDraft((current) => (current ? { ...current, name: value } : current));
+  }
+
+  function handleProfileSubmit(event) {
+    event.preventDefault();
+
+    const trimmed = profileDraft?.name?.trim() ?? "";
+    const nextName = trimmed.length > 0 ? trimmed : "";
+
+    setProfile((current) => {
+      const base = current ?? { id: "primary-user", name: "" };
+      const updated = { ...base, name: nextName };
+      return updated;
+    });
+  }
 
   return (
     <div className={styles.appShell}>
-      <header className={styles.hero}>
-        <div className={styles.topBar}>
-          <span className={styles.brand}>{t("hero.brand")}</span>
-          <button
-            type="button"
-            className={`${styles.settingsButton} ${styles.secondaryAction}`}
-            onClick={toggleSettings}
-            aria-expanded={isSettingsOpen}
-            aria-controls="settings-panel"
-          >
-            {t("settings.toggle")}
-          </button>
+      <header className={styles.header}>
+        <div className={styles.headerContent}>
+          <div className={styles.branding}>
+            <span className={styles.brand}>{t("hero.brand")}</span>
+            <h1 className={styles.title}>{t("hero.title")}</h1>
+            <p className={styles.tagline}>{t("hero.lead")}</p>
+          </div>
+          <div className={styles.profileBadge}>
+            <span className={styles.greeting}>{t("hero.greeting", { name: displayName })}</span>
+            <button
+              type="button"
+              className={`${styles.settingsButton} ${styles.secondaryAction}`}
+              onClick={toggleSettings}
+              aria-expanded={isSettingsOpen}
+              aria-controls="settings-panel"
+            >
+              {t("settings.toggle")}
+            </button>
+          </div>
         </div>
-        <div className={styles.heroContent}>
-          <p className={styles.subtitle}>{t("hero.subtitle")}</p>
-          <h1>{t("hero.title")}</h1>
-          <p className={styles.heroLead}>{t("hero.lead")}</p>
-        </div>
-        <dl className={styles.metrics}>
-          <div className={styles.metric}>
-            <dt>{t("metrics.active.label")}</dt>
-            <dd>{totalGyms}</dd>
-          </div>
-          <div className={styles.metric}>
-            <dt>{t("metrics.focus.label")}</dt>
-            <dd>{focusRotation.join(" · ")}</dd>
-          </div>
-          <div className={styles.metric}>
-            <dt>{t("metrics.mindset.label")}</dt>
-            <dd>{t("metrics.mindset.value")}</dd>
-          </div>
-        </dl>
       </header>
 
       {isSettingsOpen ? (
@@ -161,7 +178,29 @@ export default function App() {
               {t("settings.close")}
             </button>
           </div>
-          <form className={styles.settingsForm}>
+          <form className={styles.settingsForm} onSubmit={handleProfileSubmit}>
+            <label className={styles.field} htmlFor="profile-name">
+              <span>{t("profile.label")}</span>
+              <input
+                id="profile-name"
+                type="text"
+                value={profileDraft?.name ?? ""}
+                onChange={handleProfileDraftChange}
+                placeholder={t("profile.placeholder")}
+                autoComplete="off"
+              />
+            </label>
+            <p className={styles.settingsHint}>{t("profile.hint")}</p>
+            <div className={styles.settingsActions}>
+              <button type="submit" className={styles.primaryAction}>
+                {t("profile.save")}
+              </button>
+              <button type="button" onClick={closeSettings} className={styles.secondaryAction}>
+                {t("settings.close")}
+              </button>
+            </div>
+          </form>
+          <div className={styles.languageSection}>
             <label className={styles.field} htmlFor="language-select">
               <span>{t("settings.languageLabel")}</span>
               <select id="language-select" value={resolvedLanguage} onChange={handleLanguageChange}>
@@ -169,7 +208,7 @@ export default function App() {
               </select>
             </label>
             <p className={styles.settingsHint}>{t("settings.languageHint")}</p>
-          </form>
+          </div>
         </section>
       ) : null}
 
@@ -178,6 +217,7 @@ export default function App() {
           <div className={styles.managerHeader}>
             <h2 id="gym-management">{t("management.title")}</h2>
             <p>{t("management.description")}</p>
+            <p className={styles.managerSummary}>{gymSummary}</p>
           </div>
 
           <form className={styles.addForm} onSubmit={handleAddGym}>
@@ -200,7 +240,6 @@ export default function App() {
 
           <div className={styles.listHeader}>
             <h3>{t("management.list.title")}</h3>
-            <p>{gymSummary}</p>
           </div>
 
           {gyms.length === 0 ? (
@@ -250,7 +289,6 @@ export default function App() {
                             </button>
                           </div>
                         </div>
-                        <p className={styles.cardHint}>{t("management.cardHint")}</p>
                       </>
                     )}
                   </li>
@@ -259,18 +297,6 @@ export default function App() {
             </ul>
           )}
         </section>
-
-        <aside className={styles.highlights} aria-labelledby="focus-highlights">
-          <h2 id="focus-highlights">{t("highlights.title")}</h2>
-          <ul>
-            {highlightItems.map((_, index) => (
-              <li key={String(index)}>
-                <Trans i18nKey={`highlights.items.${index}`} components={{ strong: <strong /> }} />
-              </li>
-            ))}
-          </ul>
-          <p>{t("highlights.closing")}</p>
-        </aside>
       </main>
 
       <footer className={styles.footer}>

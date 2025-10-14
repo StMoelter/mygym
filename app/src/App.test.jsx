@@ -5,6 +5,10 @@ import userEvent from "@testing-library/user-event";
 import App from "./App.jsx";
 import i18n from "./i18n/config.js";
 import { storageKey, storageVersion } from "./storage/gymStorage.js";
+import {
+  storageKey as userStorageKey,
+  storageVersion as userStorageVersion
+} from "./storage/userStorage.js";
 
 async function renderApp() {
   let view;
@@ -34,10 +38,10 @@ describe("App", () => {
     await renderApp();
     const user = userEvent.setup();
 
-    const input = screen.getByLabelText(/neues gym/i);
+    const input = screen.getByLabelText(/neuer standort/i);
     await user.clear(input);
     await user.type(input, "Coast Performance Hub");
-    await user.click(screen.getByRole("button", { name: /gym hinzufügen/i }));
+    await user.click(screen.getByRole("button", { name: /standort hinzufügen/i }));
 
     expect(screen.getByRole("heading", { level: 4, name: /coast performance hub/i })).toBeVisible();
     expect(input).toHaveValue("");
@@ -49,7 +53,7 @@ describe("App", () => {
 
     await user.click(screen.getAllByRole("button", { name: /umbenennen/i })[0]);
 
-    const renameInput = screen.getByLabelText(/gym-namen bearbeiten/i);
+    const renameInput = screen.getByLabelText(/standortnamen bearbeiten/i);
     await user.clear(renameInput);
     await user.type(renameInput, "Power District Arena");
     await user.click(screen.getByRole("button", { name: /speichern/i }));
@@ -124,6 +128,37 @@ describe("App", () => {
     await renderApp();
 
     expect(screen.getByRole("button", { name: /settings/i })).toBeVisible();
-    expect(screen.getByRole("heading", { level: 2, name: /gym management/i })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: /gym overview/i })).toBeVisible();
+  });
+
+  it("shows the default profile name in the greeting", async () => {
+    await renderApp();
+
+    expect(screen.getByText(/willkommen zurück, coach/i)).toBeVisible();
+  });
+
+  it("allows updating the profile name and persists it", async () => {
+    await renderApp();
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /einstellungen/i }));
+
+    const profileInput = screen.getByLabelText(/profilname/i);
+    await user.clear(profileInput);
+    await user.type(profileInput, "Alex");
+    await user.click(screen.getByRole("button", { name: /name speichern/i }));
+
+    expect(screen.getByText(/willkommen zurück, alex/i)).toBeVisible();
+
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(userStorageKey()));
+      expect(stored.version).toBe(userStorageVersion());
+      expect(stored.user).toEqual(
+        expect.objectContaining({
+          id: "primary-user",
+          name: "Alex"
+        })
+      );
+    });
   });
 });

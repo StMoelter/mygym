@@ -1,0 +1,71 @@
+{
+  "hero": {
+    "brand": "MyGym",
+    "subtitle": "Vibe Coding · Gym Intelligence",
+    "title": "MyGym Playbook",
+    "lead": "Curate your training hubs, stay flexible with weekly scheduling, and keep visibility on every performance arena."
+  },
+  "metrics": {
+    "active": {
+      "label": "Active gyms"
+    },
+    "focus": {
+      "label": "Focus rotation",
+      "values": [
+        "Hypertrophy strength",
+        "Athletic flow",
+        "Functional power"
+      ]
+    },
+    "mindset": {
+      "label": "Mindset",
+      "value": "Discipline · Flow"
+    }
+  },
+  "management": {
+    "title": "Gym management",
+    "description": "Create fresh training locations, keep names aligned, and maintain a portfolio that keeps you motivated.",
+    "form": {
+      "label": "New gym",
+      "placeholder": "e.g. Skyline Strength Club",
+      "submit": "Add gym"
+    },
+    "list": {
+      "title": "Your gyms",
+      "summary_zero": "No locations saved yet",
+      "summary_one": "{{count}} location ready",
+      "summary_other": "{{count}} locations ready"
+    },
+    "renameForm": {
+      "label": "Edit gym name",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "actions": {
+      "rename": "Rename",
+      "remove": "Remove"
+    },
+    "cardHint": "Ready for sessions with crisp structure, strong lifts, and Vibe Coding craftsmanship."
+  },
+  "emptyState": "No gyms tracked yet. Add your first location and map your coaching landscape.",
+  "highlights": {
+    "title": "Highlights & playbook",
+    "items": [
+      "Blend <strong>progression weeks</strong> with mobility days to drive sustainable performance.",
+      "Schedule <strong>re-assessment sessions</strong> every six weeks and capture results per gym.",
+      "Leverage <strong>Vibe Coding</strong> reviews to treat training refactors with the same rigor as code."
+    ],
+    "closing": "Every gym is a commitment: keep routines lean, respect the Law of Demeter for habits, and stay adaptive."
+  },
+  "footer": "Ready for pro-level delivery · Tests green, lint clean, focus on longevity.",
+  "settings": {
+    "toggle": "Settings",
+    "title": "Language preferences",
+    "languageLabel": "Interface language",
+    "languageHint": "Additional languages are coming soon.",
+    "close": "Close",
+    "languages": {
+      "de": "German"
+    }
+  }
+}

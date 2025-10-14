@@ -1,0 +1,71 @@
+{
+  "hero": {
+    "brand": "MyGym",
+    "subtitle": "Vibe Coding · Gym Intelligence",
+    "title": "MyGym Playbook",
+    "lead": "Kuratiere deine Trainingsorte, bleibe flexibel in der Wochenplanung und behalte jede Performance-Arena im Blick."
+  },
+  "metrics": {
+    "active": {
+      "label": "Aktive Gyms"
+    },
+    "focus": {
+      "label": "Fokus-Rotation",
+      "values": [
+        "Hypertrophy Strength",
+        "Athletic Flow",
+        "Functional Power"
+      ]
+    },
+    "mindset": {
+      "label": "Mindset",
+      "value": "Disziplin · Flow"
+    }
+  },
+  "management": {
+    "title": "Gym-Verwaltung",
+    "description": "Lege neue Trainingsorte an, halte Namen aktuell und pflege ein Portfolio, das dich motiviert.",
+    "form": {
+      "label": "Neues Gym",
+      "placeholder": "z. B. Skyline Strength Club",
+      "submit": "Gym hinzufügen"
+    },
+    "list": {
+      "title": "Deine Gyms",
+      "summary_zero": "Noch kein Standort gespeichert",
+      "summary_one": "{{count}} Standort einsatzbereit",
+      "summary_other": "{{count}} Standorte einsatzbereit"
+    },
+    "renameForm": {
+      "label": "Gym-Namen bearbeiten",
+      "save": "Speichern",
+      "cancel": "Abbrechen"
+    },
+    "actions": {
+      "rename": "Umbenennen",
+      "remove": "Entfernen"
+    },
+    "cardHint": "Bereit für Sessions mit klarer Struktur, starken Lifts und Vibe Coding Qualitätsanspruch."
+  },
+  "emptyState": "Keine Gyms gespeichert. Ergänze deinen ersten Trainingsort und baue deine Coaching-Landkarte auf.",
+  "highlights": {
+    "title": "Highlights & Playbook",
+    "items": [
+      "Kombiniere <strong>Progressionswochen</strong> mit Mobility-Days, um deine Leistung nachhaltig zu steigern.",
+      "Plane <strong>Re-Assessment Sessions</strong> alle sechs Wochen und dokumentiere Ergebnisse je Gym.",
+      "Nutze <strong>Vibe Coding</strong> Reviews, um Refactorings im Training so ernst zu nehmen wie im Code."
+    ],
+    "closing": "Jedes Gym ist ein Commitment: Halte Routinen schlank, respektiere das Law of Demeter für deine Gewohnheiten und bleib adaptiv."
+  },
+  "footer": "Ready for Pro-Level Delivery · Tests green, Lint clean, Fokus on Longevity.",
+  "settings": {
+    "toggle": "Einstellungen",
+    "title": "Spracheinstellungen",
+    "languageLabel": "App-Sprache",
+    "languageHint": "Weitere Sprachen folgen in Kürze.",
+    "close": "Schließen",
+    "languages": {
+      "de": "Deutsch"
+    }
+  }
+}

@@ -26,7 +26,8 @@
     },
     "actions": {
       "rename": "Umbenennen",
-      "remove": "Entfernen"
+      "remove": "Entfernen",
+      "manage": "Geräte verwalten"
     }
   },
   "emptyState": "Noch keine Standorte erfasst. Lege den ersten Trainingsort an und halte deine Planung schlank.",
@@ -47,5 +48,48 @@
     "placeholder": "z. B. Alex",
     "hint": "Dieser Name erscheint im Kopfbereich, um den aktiven Nutzer zu zeigen.",
     "save": "Name speichern"
+  },
+  "devices": {
+    "title": "Geräte in {{gym}}",
+    "description": "Definiere Geräteeinstellungen und dokumentiere deine Übungen darauf.",
+    "summary_zero": "Noch keine Geräte hinterlegt",
+    "summary_one": "{{count}} Gerät vorbereitet",
+    "summary_other": "{{count}} Geräte vorbereitet",
+    "create": {
+      "title": "Neues Gerät anlegen",
+      "deviceNameLabel": "Gerätename",
+      "exerciseNameLabel": "Erste Übung",
+      "submit": "Gerät hinzufügen"
+    },
+    "adopt": {
+      "title": "Vorhandenes Gerät übernehmen",
+      "selectLabel": "Gerätebibliothek",
+      "placeholder": "Gerät zum Übernehmen wählen",
+      "optionLabel": "{{name}} (Mandant: {{tenant}})",
+      "submit": "Übernehmen",
+      "empty": "Noch keine geteilten Geräte vorhanden."
+    },
+    "empty": "In diesem Studio sind noch keine Geräte erfasst.",
+    "card": {
+      "tenantLabel": "Mandant: {{tenant}}",
+      "publishedBadge": "Veröffentlicht",
+      "settingsLockedBadge": "Einstellungen gesperrt",
+      "deviceNameLabel": "Gerätename",
+      "settingsSectionTitle": "Geräteeinstellungen",
+      "settingsHintEditable": "Lege alle benötigten Einstellungen fest, bevor du das Gerät veröffentlichst.",
+      "settingsHintLocked": "Die Einstellungen können nicht mehr bearbeitet werden, weil bereits Werte hinterlegt wurden.",
+      "settingsHintPublished": "Veröffentlichte Geräte haben feste Einstellungen.",
+      "noSettingsDefined": "Noch keine Einstellungen definiert.",
+      "settingLabel": "Einstellung {{index}}",
+      "newSettingLabel": "Neue Einstellung",
+      "addSetting": "Einstellung hinzufügen",
+      "removeSetting": "Entfernen",
+      "publish": "Gerät veröffentlichen",
+      "exercisesTitle": "Übungen",
+      "exerciseLabel": "Übung {{index}}",
+      "removeExercise": "Entfernen",
+      "newExerciseLabel": "Neue Übung",
+      "addExercise": "Übung hinzufügen"
+    }
   }
 }

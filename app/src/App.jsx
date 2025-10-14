@@ -1,7 +1,12 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./App.module.css";
-import { loadGyms, saveGyms } from "./storage/gymStorage.js";
+import AppHeader from "./components/AppHeader.jsx";
+import SettingsPanel from "./components/SettingsPanel.jsx";
+import GymManagementPanel from "./components/gym/GymManagementPanel.jsx";
+import DeviceManagementBoard from "./components/devices/DeviceManagementBoard.jsx";
+import { useWorkspaceActions } from "./hooks/useWorkspaceActions.js";
+import { createInitialWorkspace, loadWorkspace, saveWorkspace } from "./storage/gymStorage.js";
 import { loadUser, saveUser } from "./storage/userStorage.js";
 
 const initialGyms = [
@@ -10,292 +15,124 @@ const initialGyms = [
   { id: "urban-move", name: "Urban Move Loft" }
 ];
 
-function createGym(name) {
-  const cryptoApi = typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
-
-  if (cryptoApi?.randomUUID) {
-    return { id: cryptoApi.randomUUID(), name };
-  }
-
-  return {
-    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-    name
-  };
-}
+const initialWorkspace = createInitialWorkspace(initialGyms);
+const DEFAULT_USER = { id: "primary-user", name: "" };
+const DEFAULT_TENANT_ID = "tenant-default";
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [gyms, setGyms] = useState(() => loadGyms(initialGyms));
-  const [newGymName, setNewGymName] = useState("");
-  const [editing, setEditing] = useState(null);
+  const [workspace, setWorkspace] = useState(() => loadWorkspace(initialWorkspace));
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [profile, setProfile] = useState(() => loadUser({ id: "primary-user", name: "" }));
-  const [profileDraft, setProfileDraft] = useState(() => loadUser({ id: "primary-user", name: "" }));
+  const [profile, setProfile] = useState(() => loadUser(DEFAULT_USER));
+
+  const gyms = workspace.gyms;
+  const selectedGymId = workspace.selectedGymId ?? (gyms[0]?.id ?? null);
+  const selectedGym = useMemo(
+    () => gyms.find((gym) => gym.id === selectedGymId) ?? null,
+    [gyms, selectedGymId]
+  );
+
+  const workspaceActions = useWorkspaceActions(setWorkspace, DEFAULT_TENANT_ID);
+  const activeUserId = profile?.id ?? DEFAULT_USER.id;
+
   useLayoutEffect(() => {
-    saveGyms(gyms);
-  }, [gyms]);
+    saveWorkspace(workspace);
+  }, [workspace]);
 
   useLayoutEffect(() => {
     saveUser(profile);
   }, [profile]);
 
-  useEffect(() => {
-    if (isSettingsOpen) {
-      setProfileDraft(profile);
-    }
-  }, [isSettingsOpen, profile]);
   const totalGyms = gyms.length;
   const gymSummary = t("management.list.summary", { count: totalGyms });
-
-  function handleAddGym(event) {
-    event.preventDefault();
-    const trimmed = newGymName.trim();
-
-    if (!trimmed) {
-      return;
-    }
-
-    setGyms((previous) => [...previous, createGym(trimmed)]);
-    setNewGymName("");
-  }
-
-  function handleDeleteGym(id) {
-    setGyms((previous) => previous.filter((gym) => gym.id !== id));
-
-    setEditing((current) => {
-      if (!current || current.id !== id) {
-        return current;
-      }
-
-      return null;
-    });
-  }
-
-  function startEditing(gym) {
-    setEditing({ id: gym.id, name: gym.name });
-  }
-
-  function handleEditingChange(event) {
-    const { value } = event.target;
-    setEditing((current) => (current ? { ...current, name: value } : current));
-  }
-
-  function handleRenameGym(event) {
-    event.preventDefault();
-
-    if (!editing) {
-      return;
-    }
-
-    const trimmed = editing.name.trim();
-
-    if (!trimmed) {
-      return;
-    }
-
-    setGyms((previous) => previous.map((gym) => (gym.id === editing.id ? { ...gym, name: trimmed } : gym)));
-    setEditing(null);
-  }
-
-  function cancelEditing() {
-    setEditing(null);
-  }
-
-  function toggleSettings() {
-    setIsSettingsOpen((state) => !state);
-  }
-
-  function closeSettings() {
-    setIsSettingsOpen(false);
-  }
-
-  function handleLanguageChange(event) {
-    const { value } = event.target;
-
-    if (!value) {
-      return;
-    }
-
-    void i18n.changeLanguage(value);
-  }
+  const deviceSummary = selectedGym
+    ? t("devices.summary", { count: selectedGym.devices.length })
+    : t("devices.summary", { count: 0 });
 
   const resolvedLanguage = i18n.resolvedLanguage ?? i18n.language;
   const displayName = profile?.name?.trim() ? profile.name : t("profile.defaultName");
+  const adoptableDevices = workspace.deviceLibrary;
 
-  function handleProfileDraftChange(event) {
-    const { value } = event.target;
-    setProfileDraft((current) => (current ? { ...current, name: value } : current));
-  }
+  const handleToggleSettings = useCallback(() => {
+    setIsSettingsOpen((state) => !state);
+  }, []);
 
-  function handleProfileSubmit(event) {
-    event.preventDefault();
+  const handleCloseSettings = useCallback(() => {
+    setIsSettingsOpen(false);
+  }, []);
 
-    const trimmed = profileDraft?.name?.trim() ?? "";
-    const nextName = trimmed.length > 0 ? trimmed : "";
+  const handleLanguageChange = useCallback(
+    (event) => {
+      const { value } = event.target;
+
+      if (!value) {
+        return;
+      }
+
+      void i18n.changeLanguage(value);
+    },
+    [i18n]
+  );
+
+  const handleProfileSave = useCallback((name) => {
+    const trimmed = name.trim();
 
     setProfile((current) => {
-      const base = current ?? { id: "primary-user", name: "" };
-      const updated = { ...base, name: nextName };
-      return updated;
+      const base = current ?? DEFAULT_USER;
+      return { ...base, name: trimmed.length > 0 ? trimmed : "" };
     });
-  }
+  }, []);
 
   return (
     <div className={styles.appShell}>
-      <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div className={styles.branding}>
-            <span className={styles.brand}>{t("hero.brand")}</span>
-            <h1 className={styles.title}>{t("hero.title")}</h1>
-            <p className={styles.tagline}>{t("hero.lead")}</p>
-          </div>
-          <div className={styles.profileBadge}>
-            <span className={styles.greeting}>{t("hero.greeting", { name: displayName })}</span>
-            <button
-              type="button"
-              className={`${styles.settingsButton} ${styles.secondaryAction}`}
-              onClick={toggleSettings}
-              aria-expanded={isSettingsOpen}
-              aria-controls="settings-panel"
-            >
-              {t("settings.toggle")}
-            </button>
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        displayName={displayName}
+        isSettingsOpen={isSettingsOpen}
+        onToggleSettings={handleToggleSettings}
+      />
 
       {isSettingsOpen ? (
-        <section
-          className={styles.settingsPanel}
-          id="settings-panel"
-          role="dialog"
-          aria-modal="false"
-          aria-labelledby="settings-title"
-        >
-          <div className={styles.settingsHeader}>
-            <h2 id="settings-title">{t("settings.title")}</h2>
-            <button type="button" onClick={closeSettings} className={styles.secondaryAction}>
-              {t("settings.close")}
-            </button>
-          </div>
-          <form className={styles.settingsForm} onSubmit={handleProfileSubmit}>
-            <label className={styles.field} htmlFor="profile-name">
-              <span>{t("profile.label")}</span>
-              <input
-                id="profile-name"
-                type="text"
-                value={profileDraft?.name ?? ""}
-                onChange={handleProfileDraftChange}
-                placeholder={t("profile.placeholder")}
-                autoComplete="off"
-              />
-            </label>
-            <p className={styles.settingsHint}>{t("profile.hint")}</p>
-            <div className={styles.settingsActions}>
-              <button type="submit" className={styles.primaryAction}>
-                {t("profile.save")}
-              </button>
-              <button type="button" onClick={closeSettings} className={styles.secondaryAction}>
-                {t("settings.close")}
-              </button>
-            </div>
-          </form>
-          <div className={styles.languageSection}>
-            <label className={styles.field} htmlFor="language-select">
-              <span>{t("settings.languageLabel")}</span>
-              <select id="language-select" value={resolvedLanguage} onChange={handleLanguageChange}>
-                <option value="de">{t("settings.languages.de")}</option>
-              </select>
-            </label>
-            <p className={styles.settingsHint}>{t("settings.languageHint")}</p>
-          </div>
-        </section>
+        <SettingsPanel
+          isOpen={isSettingsOpen}
+          profile={profile}
+          resolvedLanguage={resolvedLanguage}
+          onClose={handleCloseSettings}
+          onSaveProfile={handleProfileSave}
+          onLanguageChange={handleLanguageChange}
+        />
       ) : null}
 
-      <main className={styles.main}>
-        <section className={styles.manager} aria-labelledby="gym-management">
-          <div className={styles.managerHeader}>
-            <h2 id="gym-management">{t("management.title")}</h2>
-            <p>{t("management.description")}</p>
-            <p className={styles.managerSummary}>{gymSummary}</p>
-          </div>
+      <main className={styles.content}>
+        <section className={styles.layout}>
+          <GymManagementPanel
+            gyms={gyms}
+            selectedGymId={selectedGymId}
+            gymSummary={gymSummary}
+            onAddGym={workspaceActions.addGym}
+            onRenameGym={workspaceActions.renameGym}
+            onRemoveGym={workspaceActions.removeGym}
+            onSelectGym={workspaceActions.selectGym}
+          />
 
-          <form className={styles.addForm} onSubmit={handleAddGym}>
-            <label className={styles.field} htmlFor="gym-name">
-              <span>{t("management.form.label")}</span>
-              <input
-                id="gym-name"
-                name="gym-name"
-                type="text"
-                value={newGymName}
-                onChange={(event) => setNewGymName(event.target.value)}
-                placeholder={t("management.form.placeholder")}
-                autoComplete="off"
-              />
-            </label>
-            <button type="submit" className={styles.primaryAction}>
-              {t("management.form.submit")}
-            </button>
-          </form>
+          <div className={styles.divider} aria-hidden="true" />
 
-          <div className={styles.listHeader}>
-            <h3>{t("management.list.title")}</h3>
-          </div>
-
-          {gyms.length === 0 ? (
-            <p className={styles.emptyState}>{t("emptyState")}</p>
-          ) : (
-            <ul className={styles.gymList}>
-              {gyms.map((gym) => {
-                const isEditing = editing?.id === gym.id;
-
-                return (
-                  <li key={gym.id} className={styles.gymCard}>
-                    {isEditing ? (
-                      <form className={styles.renameForm} onSubmit={handleRenameGym}>
-                        <label className={styles.field} htmlFor={`rename-${gym.id}`}>
-                          <span>{t("management.renameForm.label")}</span>
-                          <input
-                            id={`rename-${gym.id}`}
-                            type="text"
-                            value={editing.name}
-                            onChange={handleEditingChange}
-                            autoFocus
-                          />
-                        </label>
-                        <div className={styles.cardActions}>
-                          <button type="submit" className={styles.primaryAction}>
-                            {t("management.renameForm.save")}
-                          </button>
-                          <button type="button" onClick={cancelEditing} className={styles.secondaryAction}>
-                            {t("management.renameForm.cancel")}
-                          </button>
-                        </div>
-                      </form>
-                    ) : (
-                      <>
-                        <div className={styles.cardHeader}>
-                          <h4>{gym.name}</h4>
-                          <div className={styles.cardActions}>
-                            <button type="button" onClick={() => startEditing(gym)} className={styles.secondaryAction}>
-                              {t("management.actions.rename")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteGym(gym.id)}
-                              className={styles.dangerAction}
-                            >
-                              {t("management.actions.remove")}
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
+          <DeviceManagementBoard
+            gym={selectedGym}
+            deviceLibrary={adoptableDevices}
+            activeUserId={activeUserId}
+            deviceSummary={deviceSummary}
+            onCreateDevice={workspaceActions.createDevice}
+            onAdoptDevice={workspaceActions.adoptDeviceFromLibrary}
+            onRenameDevice={workspaceActions.renameDevice}
+            onPublishDevice={workspaceActions.publishDevice}
+            onAddSetting={workspaceActions.addSetting}
+            onRenameSetting={workspaceActions.renameSetting}
+            onRemoveSetting={workspaceActions.removeSetting}
+            onAddExercise={workspaceActions.addExercise}
+            onRenameExercise={workspaceActions.renameExercise}
+            onRemoveExercise={workspaceActions.removeExercise}
+            onUpdateSettingValue={workspaceActions.updateSettingValue}
+          />
         </section>
       </main>
 

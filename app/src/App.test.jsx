@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import userEvent from "@testing-library/user-event";
@@ -10,22 +10,29 @@ import {
   storageVersion as userStorageVersion
 } from "./storage/userStorage.js";
 
-async function renderApp() {
+let consoleErrorSpy;
+let consoleWarnSpy;
+
+function renderApp() {
   let view;
 
-  await act(async () => {
+  act(() => {
     view = render(
       <I18nextProvider i18n={i18n}>
         <App />
       </I18nextProvider>
     );
-    await Promise.resolve();
   });
 
   return view;
 }
 
 describe("App", () => {
+  beforeAll(() => {
+    consoleErrorSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
+    consoleWarnSpy = vi.spyOn(globalThis.console, "warn").mockImplementation(() => {});
+  });
+
   beforeEach(() => {
     window.localStorage.clear();
   });
@@ -34,8 +41,13 @@ describe("App", () => {
     await i18n.changeLanguage("de");
   });
 
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
+  });
+
   it("allows creating a new gym", async () => {
-    await renderApp();
+    renderApp();
     const user = userEvent.setup();
 
     const input = screen.getByLabelText(/neuer standort/i);
@@ -48,7 +60,7 @@ describe("App", () => {
   });
 
   it("supports renaming an existing gym", async () => {
-    await renderApp();
+    renderApp();
     const user = userEvent.setup();
 
     await user.click(screen.getAllByRole("button", { name: /umbenennen/i })[0]);
@@ -62,7 +74,7 @@ describe("App", () => {
   });
 
   it("removes a gym from the list", async () => {
-    await renderApp();
+    renderApp();
     const user = userEvent.setup();
 
     expect(screen.getByRole("heading", { level: 4, name: /pulse arena/i })).toBeInTheDocument();
@@ -73,23 +85,27 @@ describe("App", () => {
   });
 
   it("loads gyms from persistent storage", async () => {
-    const gyms = [
-      { id: "saved-1", name: "Saved Strength Lab" },
-      { id: "saved-2", name: "Downtown Powerhouse" }
-    ];
+    const workspace = {
+      gyms: [
+        { id: "saved-1", name: "Saved Strength Lab", devices: [] },
+        { id: "saved-2", name: "Downtown Powerhouse", devices: [] }
+      ],
+      deviceLibrary: [],
+      selectedGymId: "saved-1"
+    };
     window.localStorage.setItem(
       storageKey(),
-      JSON.stringify({ version: storageVersion(), gyms })
+      JSON.stringify({ version: storageVersion(), workspace })
     );
 
-    await renderApp();
+    renderApp();
 
     expect(screen.getByRole("heading", { level: 4, name: /saved strength lab/i })).toBeVisible();
     expect(screen.getByRole("heading", { level: 4, name: /downtown powerhouse/i })).toBeVisible();
   });
 
   it("persists gyms to local storage after modifications", async () => {
-    await renderApp();
+    renderApp();
     const user = userEvent.setup();
 
     await user.click(screen.getAllByRole("button", { name: /entfernen/i })[0]);
@@ -97,18 +113,87 @@ describe("App", () => {
     await waitFor(() => {
       const stored = JSON.parse(window.localStorage.getItem(storageKey()));
       expect(stored.version).toBe(storageVersion());
-      expect(stored.gyms).toEqual(
+      expect(stored.workspace.gyms).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ name: "Iron Haven" }),
           expect.objectContaining({ name: "Urban Move Loft" })
         ])
       );
-      expect(stored.gyms).toHaveLength(2);
+      expect(stored.workspace.gyms).toHaveLength(2);
     });
   });
 
+  it("allows creating a device with an initial exercise", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    const deviceNameInput = screen.getByLabelText(/gerätename/i);
+    const exerciseInput = screen.getByLabelText(/erste übung/i);
+
+    await user.type(deviceNameInput, "Lat Pulldown");
+    await user.type(exerciseInput, "Wide grip pulldown");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    expect(screen.getByRole("heading", { level: 4, name: /lat pulldown/i })).toBeVisible();
+    expect(screen.getByLabelText(/übung 1/i)).toHaveValue("Wide grip pulldown");
+  });
+
+  it("allows adopting a device from the library into another gym", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/gerätename/i), "Chest Press");
+    await user.type(screen.getByLabelText(/erste übung/i), "Bench press");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    await user.click(screen.getAllByRole("button", { name: /geräte verwalten/i })[1]);
+
+    const select = screen.getByLabelText(/gerätebibliothek/i);
+    await user.selectOptions(select, screen.getByRole("option", { name: /chest press/i }));
+    await user.click(screen.getByRole("button", { name: /übernehmen/i }));
+
+    expect(screen.getByRole("heading", { level: 4, name: /chest press/i })).toBeVisible();
+  });
+
+  it("locks device settings after values are recorded", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/gerätename/i), "Row Machine");
+    await user.type(screen.getByLabelText(/erste übung/i), "Seated row");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    await user.type(screen.getByLabelText(/neue einstellung/i), "Sitzhöhe");
+    await user.click(screen.getByRole("button", { name: /einstellung hinzufügen/i }));
+
+    const valueInput = screen.getByLabelText(/sitzhöhe/i);
+    await user.type(valueInput, "4");
+
+    expect(screen.getByLabelText(/neue einstellung/i)).toBeDisabled();
+    const settingsItem = screen.getByLabelText(/einstellung 1/i).closest("li");
+    expect(settingsItem).not.toBeNull();
+    if (settingsItem) {
+      expect(within(settingsItem).getByRole("button", { name: /entfernen/i })).toBeDisabled();
+    }
+  });
+
+  it("prevents removing the last exercise of a device", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText(/gerätename/i), "Cable Tower");
+    await user.type(screen.getByLabelText(/erste übung/i), "Face pull");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    const exerciseItem = screen.getByLabelText(/übung 1/i).closest("li");
+    expect(exerciseItem).not.toBeNull();
+    if (exerciseItem) {
+      expect(within(exerciseItem).getByRole("button", { name: /entfernen/i })).toBeDisabled();
+    }
+  });
+
   it("only exposes German as a selectable language", async () => {
-    await renderApp();
+    renderApp();
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("button", { name: /einstellungen/i }));
@@ -125,20 +210,20 @@ describe("App", () => {
       await i18n.changeLanguage("en");
     });
 
-    await renderApp();
+    renderApp();
 
     expect(screen.getByRole("button", { name: /settings/i })).toBeVisible();
     expect(screen.getByRole("heading", { level: 2, name: /gym overview/i })).toBeVisible();
   });
 
   it("shows the default profile name in the greeting", async () => {
-    await renderApp();
+    renderApp();
 
     expect(screen.getByText(/willkommen zurück, coach/i)).toBeVisible();
   });
 
   it("allows updating the profile name and persists it", async () => {
-    await renderApp();
+    renderApp();
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("button", { name: /einstellungen/i }));

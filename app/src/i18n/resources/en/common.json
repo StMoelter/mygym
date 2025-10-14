@@ -26,7 +26,8 @@
     },
     "actions": {
       "rename": "Rename",
-      "remove": "Remove"
+      "remove": "Remove",
+      "manage": "Manage devices"
     }
   },
   "emptyState": "No locations tracked yet. Add your first gym to keep planning simple.",
@@ -47,5 +48,48 @@
     "placeholder": "e.g. Alex",
     "hint": "This name appears in the header to show who is active.",
     "save": "Save name"
+  },
+  "devices": {
+    "title": "Devices in {{gym}}",
+    "description": "Define equipment setups and document how you use them with each exercise.",
+    "summary_zero": "No devices added yet",
+    "summary_one": "{{count}} device ready",
+    "summary_other": "{{count}} devices ready",
+    "create": {
+      "title": "Create a new device",
+      "deviceNameLabel": "Device name",
+      "exerciseNameLabel": "Initial exercise",
+      "submit": "Add device"
+    },
+    "adopt": {
+      "title": "Use an existing device",
+      "selectLabel": "Device library",
+      "placeholder": "Select a device to import",
+      "optionLabel": "{{name}} (tenant: {{tenant}})",
+      "submit": "Add from library",
+      "empty": "No shared devices available yet."
+    },
+    "empty": "No devices tracked for this gym yet.",
+    "card": {
+      "tenantLabel": "Tenant: {{tenant}}",
+      "publishedBadge": "Published",
+      "settingsLockedBadge": "Controls locked",
+      "deviceNameLabel": "Device name",
+      "settingsSectionTitle": "Device controls",
+      "settingsHintEditable": "Add all required controls before publishing the device.",
+      "settingsHintLocked": "Controls can no longer be edited because settings values were recorded.",
+      "settingsHintPublished": "Published devices have fixed controls.",
+      "noSettingsDefined": "No controls defined yet.",
+      "settingLabel": "Control {{index}}",
+      "newSettingLabel": "New control",
+      "addSetting": "Add control",
+      "removeSetting": "Remove",
+      "publish": "Publish device",
+      "exercisesTitle": "Exercises",
+      "exerciseLabel": "Exercise {{index}}",
+      "removeExercise": "Remove",
+      "newExerciseLabel": "New exercise",
+      "addExercise": "Add exercise"
+    }
   }
 }

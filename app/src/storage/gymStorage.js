@@ -1,5 +1,5 @@
-const STORAGE_KEY = "mygym.gyms";
-const STORAGE_VERSION = 1;
+const STORAGE_KEY = "mygym.workspace";
+const STORAGE_VERSION = 2;
 
 function warn(message, error) {
   const logger = typeof globalThis !== "undefined" ? globalThis.console : undefined;
@@ -17,67 +17,224 @@ function getStorage() {
   return window.localStorage;
 }
 
-function isValidGym(gym) {
-  return Boolean(gym && typeof gym.id === "string" && typeof gym.name === "string");
+function isNonEmptyString(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function normaliseSettingsDefinitions(candidate) {
+  if (!Array.isArray(candidate)) {
+    return [];
+  }
+
+  return candidate
+    .filter((definition) => isNonEmptyString(definition?.id) && isNonEmptyString(definition?.name))
+    .map((definition) => ({ id: definition.id, name: definition.name }));
+}
+
+function normaliseSettingsValues(candidate) {
+  if (!candidate || typeof candidate !== "object") {
+    return {};
+  }
+
+  const normalised = {};
+
+  for (const [userId, values] of Object.entries(candidate)) {
+    if (!isNonEmptyString(userId) || !values || typeof values !== "object") {
+      continue;
+    }
+
+    const userValues = {};
+
+    for (const [settingId, value] of Object.entries(values)) {
+      if (isNonEmptyString(settingId) && typeof value === "string") {
+        userValues[settingId] = value;
+      }
+    }
+
+    normalised[userId] = userValues;
+  }
+
+  return normalised;
+}
+
+function normaliseExercises(candidate, { allowEmpty = false } = {}) {
+  if (!Array.isArray(candidate)) {
+    return allowEmpty ? [] : undefined;
+  }
+
+  const exercises = candidate
+    .filter((exercise) => isNonEmptyString(exercise?.id) && isNonEmptyString(exercise?.name))
+    .map((exercise) => ({
+      id: exercise.id,
+      name: exercise.name,
+      settingsValues: normaliseSettingsValues(exercise.settingsValues)
+    }));
+
+  if (!allowEmpty && exercises.length === 0) {
+    return undefined;
+  }
+
+  return exercises;
+}
+
+function normaliseDeviceAssignment(candidate) {
+  if (!candidate || typeof candidate !== "object") {
+    return undefined;
+  }
+
+  const hasValidId = isNonEmptyString(candidate.id);
+  const hasValidName = isNonEmptyString(candidate.name);
+  const hasValidLibraryRef = isNonEmptyString(candidate.libraryDeviceId);
+
+  if (!hasValidId || !hasValidName || !hasValidLibraryRef) {
+    return undefined;
+  }
+
+  const exercises = normaliseExercises(candidate.exercises, { allowEmpty: true });
+
+  if (!exercises) {
+    return undefined;
+  }
+
+  return {
+    id: candidate.id,
+    name: candidate.name,
+    libraryDeviceId: candidate.libraryDeviceId,
+    tenantId: isNonEmptyString(candidate.tenantId) ? candidate.tenantId : "tenant-default",
+    published: Boolean(candidate.published),
+    settingsLocked: Boolean(candidate.settingsLocked),
+    settingsDefinitions: normaliseSettingsDefinitions(candidate.settingsDefinitions),
+    exercises
+  };
+}
+
+function normaliseLibraryDevice(candidate) {
+  if (!candidate || typeof candidate !== "object") {
+    return undefined;
+  }
+
+  const hasValidId = isNonEmptyString(candidate.id);
+  const hasValidName = isNonEmptyString(candidate.name);
+
+  if (!hasValidId || !hasValidName) {
+    return undefined;
+  }
+
+  const exercises = normaliseExercises(candidate.exercises, { allowEmpty: true });
+
+  if (!exercises) {
+    return undefined;
+  }
+
+  return {
+    id: candidate.id,
+    name: candidate.name,
+    tenantId: isNonEmptyString(candidate.tenantId) ? candidate.tenantId : "tenant-default",
+    published: Boolean(candidate.published),
+    settingsDefinitions: normaliseSettingsDefinitions(candidate.settingsDefinitions),
+    exercises: exercises.map((exercise) => ({ id: exercise.id, name: exercise.name }))
+  };
 }
 
 function normaliseGyms(candidate) {
   if (!Array.isArray(candidate)) {
+    return [];
+  }
+
+  const gyms = candidate
+    .filter((gym) => isNonEmptyString(gym?.id) && isNonEmptyString(gym?.name))
+    .map((gym) => ({
+      id: gym.id,
+      name: gym.name,
+      devices: Array.isArray(gym.devices)
+        ? gym.devices.map(normaliseDeviceAssignment).filter(Boolean)
+        : []
+    }));
+
+  return gyms;
+}
+
+function normaliseWorkspace(candidate) {
+  if (!candidate || typeof candidate !== "object") {
     return undefined;
   }
 
-  const validGyms = candidate.filter(isValidGym);
+  const gyms = normaliseGyms(candidate.gyms);
+  const deviceLibrary = Array.isArray(candidate.deviceLibrary)
+    ? candidate.deviceLibrary.map(normaliseLibraryDevice).filter(Boolean)
+    : [];
+  const providedId = isNonEmptyString(candidate.selectedGymId) ? candidate.selectedGymId : null;
+  const selectedGymId = providedId && gyms.some((gym) => gym.id === providedId) ? providedId : gyms[0]?.id ?? null;
 
-  if (validGyms.length !== candidate.length) {
-    return undefined;
+  return {
+    gyms,
+    deviceLibrary,
+    selectedGymId
+  };
+}
+
+function createWorkspaceFromGyms(fallbackGyms) {
+  if (!Array.isArray(fallbackGyms)) {
+    return { gyms: [], deviceLibrary: [], selectedGymId: null };
   }
 
-  return validGyms;
+  const gyms = fallbackGyms
+    .filter((gym) => isNonEmptyString(gym?.id) && isNonEmptyString(gym?.name))
+    .map((gym) => ({ id: gym.id, name: gym.name, devices: [] }));
+
+  return {
+    gyms,
+    deviceLibrary: [],
+    selectedGymId: gyms[0]?.id ?? null
+  };
 }
 
 function runMigrations(serialised) {
-  if (serialised.version === STORAGE_VERSION) {
-    return normaliseGyms(serialised.gyms);
+  if (serialised?.version === STORAGE_VERSION) {
+    return normaliseWorkspace(serialised.workspace);
   }
 
-  // Future storage versions can be handled here. Returning undefined triggers fallback data.
+  if (serialised?.version === 1 && Array.isArray(serialised.gyms)) {
+    return normaliseWorkspace(createWorkspaceFromGyms(serialised.gyms));
+  }
+
   return undefined;
 }
 
-export function loadGyms(fallbackGyms) {
+export function createInitialWorkspace(initialGyms) {
+  return createWorkspaceFromGyms(initialGyms);
+}
+
+export function loadWorkspace(fallbackWorkspace) {
   const storage = getStorage();
+  const safeFallback = normaliseWorkspace(fallbackWorkspace) ?? { gyms: [], deviceLibrary: [], selectedGymId: null };
 
   if (!storage) {
-    return fallbackGyms;
+    return safeFallback;
   }
 
   const storedValue = storage.getItem(STORAGE_KEY);
 
   if (!storedValue) {
-    return fallbackGyms;
+    return safeFallback;
   }
 
   try {
     const parsed = JSON.parse(storedValue);
-
-    if (!parsed || typeof parsed !== "object") {
-      return fallbackGyms;
-    }
-
     const migrated = runMigrations(parsed);
 
     if (!migrated) {
-      return fallbackGyms;
+      return safeFallback;
     }
 
     return migrated;
   } catch (error) {
-    warn("Failed to load gyms from storage", error);
-    return fallbackGyms;
+    warn("Failed to load workspace from storage", error);
+    return safeFallback;
   }
 }
 
-export function saveGyms(gyms) {
+export function saveWorkspace(workspace) {
   const storage = getStorage();
 
   if (!storage) {
@@ -85,10 +242,10 @@ export function saveGyms(gyms) {
   }
 
   try {
-    const payload = JSON.stringify({ version: STORAGE_VERSION, gyms });
+    const payload = JSON.stringify({ version: STORAGE_VERSION, workspace });
     storage.setItem(STORAGE_KEY, payload);
   } catch (error) {
-    warn("Failed to persist gyms to storage", error);
+    warn("Failed to persist workspace to storage", error);
   }
 }
 

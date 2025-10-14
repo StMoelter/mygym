@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import userEvent from "@testing-library/user-event";
@@ -10,8 +10,8 @@ import {
   storageVersion as userStorageVersion
 } from "./storage/userStorage.js";
 
-const originalConsoleError = console.error;
-const originalConsoleWarn = console.warn;
+let consoleErrorSpy;
+let consoleWarnSpy;
 
 function renderApp() {
   let view;
@@ -28,29 +28,22 @@ function renderApp() {
 }
 
 describe("App", () => {
+  beforeAll(() => {
+    consoleErrorSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
+    consoleWarnSpy = vi.spyOn(globalThis.console, "warn").mockImplementation(() => {});
+  });
+
   beforeEach(() => {
     window.localStorage.clear();
-    vi.spyOn(console, "error").mockImplementation((message, ...args) => {
-      if (typeof message === "string" && message.includes("not wrapped in act")) {
-        return;
-      }
-
-      originalConsoleError(message, ...args);
-    });
-
-    vi.spyOn(console, "warn").mockImplementation((message, ...args) => {
-      if (typeof message === "string" && message.includes("not wrapped in act")) {
-        return;
-      }
-
-      originalConsoleWarn(message, ...args);
-    });
   });
 
   afterEach(async () => {
-    console.error.mockRestore();
-    console.warn.mockRestore();
     await i18n.changeLanguage("de");
+  });
+
+  afterAll(() => {
+    consoleErrorSpy.mockRestore();
+    consoleWarnSpy.mockRestore();
   });
 
   it("allows creating a new gym", async () => {

@@ -14,3 +14,4 @@ Für jede Änderung am Quellcode dieser Repository gilt:
 - Berücksichtige eine zukünftige Backend-Integration bereits bei der Konzeption, ohne sie zu implementieren, damit die späteren Schnittstellen vorbereitet werden können.
 - Bei Änderungen am Datenmodell sind Migrationen und Kompatibilität sicherzustellen, damit neue Releases stets mit bereits vorhandenen Daten der Nutzer kompatibel bleiben.
 - Die App muss mandantenfähig geplant werden. Auch wenn aktuell nur ein Benutzer existiert, ist auf zukünftige Mehrmandantenfähigkeit zu achten und dies bei Änderungen mitzudenken.
+- Große Dateien müssen bei Bedarf automatisch und wie in professionellen Projekten üblich in wartbare Einheiten zerlegt werden. Plane Refactorings entsprechend ein, sobald eine Datei ausufert.

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import styles from "./App.module.css";
+import { loadGyms, saveGyms } from "./storage/gymStorage.js";
 
 const initialGyms = [
   { id: "pulse-arena", name: "Pulse Arena" },
@@ -23,10 +24,13 @@ function createGym(name) {
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [gyms, setGyms] = useState(initialGyms);
+  const [gyms, setGyms] = useState(() => loadGyms(initialGyms));
   const [newGymName, setNewGymName] = useState("");
   const [editing, setEditing] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  useLayoutEffect(() => {
+    saveGyms(gyms);
+  }, [gyms]);
 
   const focusRotation = t("metrics.focus.values", { returnObjects: true });
   const highlightItems = t("highlights.items", { returnObjects: true });

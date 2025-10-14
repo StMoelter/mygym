@@ -1,0 +1,449 @@
+:root {
+  color-scheme: only light;
+  font-family: "Inter", "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #e2e8f0;
+  background-color: #020617;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top left, rgba(34, 211, 238, 0.15), transparent 45%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.2), transparent 40%), #020617;
+  min-height: 100vh;
+}
+
+.appShell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+}
+
+.hero {
+  position: relative;
+  padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.5rem, 6vw, 6rem) clamp(2rem, 5vw, 3.5rem);
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.9), rgba(14, 165, 233, 0.85));
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  overflow: hidden;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 20%, rgba(236, 72, 153, 0.4), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(56, 189, 248, 0.35), transparent 40%);
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  max-width: 720px;
+  z-index: 1;
+}
+
+.topBar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: clamp(1rem, 3vw, 1.75rem);
+}
+
+.brand {
+  font-size: 0.95rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.9);
+}
+
+.settingsButton {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(226, 232, 240, 0.35);
+  color: #f8fafc;
+  padding-inline: 1.25rem;
+}
+
+.settingsButton:hover,
+.settingsButton:focus-visible {
+  filter: brightness(1.1);
+}
+
+.subtitle {
+  text-transform: uppercase;
+  letter-spacing: 0.4em;
+  font-size: 0.8rem;
+  margin: 0 0 0.75rem;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.75rem, 5vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.heroLead {
+  margin: 1rem 0 0;
+  font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.metrics {
+  position: relative;
+  margin-top: clamp(2rem, 5vw, 3rem);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  z-index: 1;
+}
+
+.settingsPanel {
+  margin: -1.5rem auto 0;
+  width: min(720px, calc(100% - 3rem));
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  display: grid;
+  gap: 1.25rem;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 24px 45px -32px rgba(14, 165, 233, 0.7);
+}
+
+.settingsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.settingsHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #f8fafc;
+}
+
+.settingsForm {
+  display: grid;
+  gap: 1rem;
+}
+
+.settingsForm select {
+  border-radius: 0.85rem;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #0f172a;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.94), rgba(226, 232, 240, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.settingsForm select:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.85);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
+}
+
+.settingsHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.metric {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 18px 40px -24px rgba(30, 64, 175, 0.8);
+}
+
+.metric dt {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(148, 163, 184, 0.95);
+}
+
+.metric dd {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.main {
+  display: grid;
+  gap: clamp(2rem, 4vw, 3rem);
+  padding: clamp(2rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+}
+
+@media (max-width: 960px) {
+  .main {
+    grid-template-columns: 1fr;
+  }
+}
+
+.manager {
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 1.75rem;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  backdrop-filter: blur(12px);
+}
+
+.managerHeader h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.65rem;
+  color: #f8fafc;
+}
+
+.managerHeader p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.addForm {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: min(320px, 100%);
+}
+
+.field span {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.field input {
+  border-radius: 0.85rem;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  padding: 0.85rem 1.1rem;
+  font-size: 1rem;
+  color: #0f172a;
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.94), rgba(226, 232, 240, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.85);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25);
+}
+
+.primaryAction,
+.secondaryAction,
+.dangerAction {
+  border: none;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.primaryAction {
+  background: linear-gradient(135deg, #22d3ee, #2563eb);
+  color: #0f172a;
+  box-shadow: 0 12px 30px -14px rgba(56, 189, 248, 0.8);
+}
+
+.primaryAction:hover,
+.primaryAction:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.secondaryAction {
+  background: rgba(148, 163, 184, 0.2);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.secondaryAction:hover,
+.secondaryAction:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.dangerAction {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.dangerAction:hover,
+.dangerAction:focus-visible {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.listHeader h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #f8fafc;
+}
+
+.listHeader p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.65);
+}
+
+.emptyState {
+  margin: 0;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.5);
+  color: rgba(226, 232, 240, 0.75);
+  text-align: center;
+}
+
+.gymList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.gymCard {
+  border-radius: 1.35rem;
+  border: 1px solid rgba(59, 130, 246, 0.18);
+  background: rgba(2, 6, 23, 0.75);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 16px 40px -30px rgba(30, 64, 175, 0.8);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.25rem;
+}
+
+.cardHeader h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f8fafc;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cardHint {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.6);
+  font-size: 0.95rem;
+}
+
+.renameForm {
+  display: grid;
+  gap: 1rem;
+}
+
+.highlights {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 1.75rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  backdrop-filter: blur(10px);
+}
+
+.highlights h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  color: #f8fafc;
+}
+
+.highlights ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.75rem;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.highlights p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.footer {
+  text-align: center;
+  padding: 2.5rem 1.5rem 3.5rem;
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .addForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cardHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cardActions {
+    justify-content: flex-start;
+  }
+
+  .topBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .settingsPanel {
+    width: calc(100% - 2rem);
+    margin-inline: 1rem;
+  }
+}

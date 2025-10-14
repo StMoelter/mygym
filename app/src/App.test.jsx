@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import { I18nextProvider } from "react-i18next";
 import userEvent from "@testing-library/user-event";
-import App, { GYM_STORAGE_KEY } from "./App.jsx";
+import App from "./App.jsx";
+import { GYM_STORAGE_KEY } from "./hooks/usePersistentGyms.js";
 import i18n from "./i18n/config.js";
 
 async function renderApp() {

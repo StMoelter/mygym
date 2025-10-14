@@ -1,87 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import styles from "./App.module.css";
-
-const initialGyms = [
-  { id: "pulse-arena", name: "Pulse Arena" },
-  { id: "iron-haven", name: "Iron Haven" },
-  { id: "urban-move", name: "Urban Move Loft" }
-];
-
-export const GYM_STORAGE_KEY = "mygym.gyms";
-
-function getStorage() {
-  if (typeof globalThis === "undefined") {
-    return undefined;
-  }
-
-  return globalThis.localStorage ?? undefined;
-}
-
-function readStoredGyms() {
-  const storage = getStorage();
-
-  if (!storage) {
-    return null;
-  }
-
-  const rawValue = storage.getItem(GYM_STORAGE_KEY);
-
-  if (!rawValue) {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(rawValue);
-
-    if (
-      Array.isArray(parsed) &&
-      parsed.every((item) => item && typeof item.id === "string" && typeof item.name === "string")
-    ) {
-      return parsed;
-    }
-  } catch (error) {
-    const logger = typeof globalThis !== "undefined" ? globalThis.console : undefined;
-    logger?.warn("Failed to parse stored gyms", error);
-  }
-
-  return null;
-}
-
-function createGym(name) {
-  const cryptoApi = typeof globalThis !== "undefined" ? globalThis.crypto : undefined;
-
-  if (cryptoApi?.randomUUID) {
-    return { id: cryptoApi.randomUUID(), name };
-  }
-
-  return {
-    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-    name
-  };
-}
+import { usePersistentGyms } from "./hooks/usePersistentGyms.js";
 
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [gyms, setGyms] = useState(() => readStoredGyms() ?? initialGyms);
+  const { gyms, addGym, renameGym, removeGym } = usePersistentGyms();
   const [newGymName, setNewGymName] = useState("");
   const [editing, setEditing] = useState(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-  useEffect(() => {
-    const storage = getStorage();
-
-    if (!storage) {
-      return;
-    }
-
-    try {
-      storage.setItem(GYM_STORAGE_KEY, JSON.stringify(gyms));
-    } catch (error) {
-      const logger = typeof globalThis !== "undefined" ? globalThis.console : undefined;
-      logger?.warn("Failed to persist gyms", error);
-    }
-  }, [gyms]);
 
   const focusRotation = t("metrics.focus.values", { returnObjects: true });
   const highlightItems = t("highlights.items", { returnObjects: true });
@@ -96,12 +23,12 @@ export default function App() {
       return;
     }
 
-    setGyms((previous) => [...previous, createGym(trimmed)]);
+    addGym(trimmed);
     setNewGymName("");
   }
 
   function handleDeleteGym(id) {
-    setGyms((previous) => previous.filter((gym) => gym.id !== id));
+    removeGym(id);
 
     setEditing((current) => {
       if (!current || current.id !== id) {
@@ -134,7 +61,7 @@ export default function App() {
       return;
     }
 
-    setGyms((previous) => previous.map((gym) => (gym.id === editing.id ? { ...gym, name: trimmed } : gym)));
+    renameGym(editing.id, trimmed);
     setEditing(null);
   }
 

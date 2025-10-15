@@ -12,6 +12,7 @@ export default function DeviceManagementBoard({
   onAdoptDevice,
   onRenameDevice,
   onPublishDevice,
+  onUpdateWeightStackCount,
   onAddSetting,
   onRenameSetting,
   onRemoveSetting,
@@ -234,14 +235,21 @@ export default function DeviceManagementBoard({
             const exerciseDraftValues = exerciseNameDrafts[device.id] ?? {};
             const exerciseDraft = newExerciseDrafts[device.id] ?? "";
 
+            const weightStackCount = device.weightStackCount ?? 1;
+
             return (
               <li key={device.id} className={styles.deviceCard}>
                 <div className={styles.deviceHeader}>
                   <div>
                     <h4>{device.name}</h4>
-                    <span className={styles.deviceMeta}>
-                      {t("devices.card.tenantLabel", { tenant: device.tenantId })}
-                    </span>
+                    <div className={styles.deviceMetaList}>
+                      <span className={styles.deviceMetaListItem}>
+                        {t("devices.card.tenantLabel", { tenant: device.tenantId })}
+                      </span>
+                      <span className={styles.deviceMetaListItem}>
+                        {t("devices.card.weightStackOption", { count: weightStackCount })}
+                      </span>
+                    </div>
                   </div>
                   <div className={styles.deviceBadges}>
                     {device.published ? (
@@ -265,6 +273,32 @@ export default function DeviceManagementBoard({
                       }
                       onBlur={() => handleDeviceNameBlur(device.id)}
                     />
+                  </label>
+                </div>
+
+                <div className={styles.deviceNameField}>
+                  <label className={styles.field} htmlFor={`device-weight-stacks-${device.id}`}>
+                    <span>{t("devices.card.weightStackLabel")}</span>
+                    <select
+                      id={`device-weight-stacks-${device.id}`}
+                      value={weightStackCount}
+                      onChange={(event) =>
+                        {
+                          const nextValue = Number.parseInt(event.target.value, 10);
+
+                          if (!Number.isNaN(nextValue)) {
+                            onUpdateWeightStackCount(gym.id, device.id, nextValue);
+                          }
+                        }
+                      }
+                      disabled={device.published || device.settingsLocked}
+                    >
+                      {[1, 2].map((option) => (
+                        <option key={option} value={option}>
+                          {t("devices.card.weightStackOption", { count: option })}
+                        </option>
+                      ))}
+                    </select>
                   </label>
                 </div>
 
@@ -355,7 +389,8 @@ export default function DeviceManagementBoard({
                   <h5>{t("devices.card.exercisesTitle")}</h5>
                   <ul className={styles.exerciseList}>
                     {device.exercises.map((exercise, index) => {
-                      const currentValues = exercise.settingsValues?.[activeUserId] ?? {};
+                      const tenantValues = exercise.settingsValues?.[device.tenantId] ?? {};
+                      const currentValues = tenantValues[activeUserId] ?? {};
 
                       return (
                         <li key={exercise.id} className={styles.exerciseItem}>
@@ -392,22 +427,25 @@ export default function DeviceManagementBoard({
                             <p className={styles.deviceHint}>{t("devices.card.noSettingsDefined")}</p>
                           ) : (
                             <div className={styles.valuesGrid}>
-                              {device.settingsDefinitions.map((definition) => (
-                                <label
-                                  key={definition.id}
-                                  className={styles.field}
-                                  htmlFor={`value-${device.id}-${exercise.id}-${definition.id}`}
-                                >
-                                  <span>{definition.name}</span>
-                                  <input
-                                    id={`value-${device.id}-${exercise.id}-${definition.id}`}
-                                    type="text"
-                                    value={currentValues[definition.id] ?? ""}
-                                    onChange={(event) =>
-                                      onUpdateSettingValue(
-                                        gym.id,
-                                        device.id,
-                                        exercise.id,
+                          {device.settingsDefinitions.map((definition) => (
+                            <label
+                              key={definition.id}
+                              className={styles.field}
+                              htmlFor={`value-${device.id}-${exercise.id}-${definition.id}`}
+                            >
+                              <span>{definition.name}</span>
+                              <input
+                                id={`value-${device.id}-${exercise.id}-${definition.id}`}
+                                type="number"
+                                inputMode="decimal"
+                                step="any"
+                                className={styles.numericInput}
+                                value={currentValues[definition.id] ?? ""}
+                                onChange={(event) =>
+                                  onUpdateSettingValue(
+                                    gym.id,
+                                    device.id,
+                                    exercise.id,
                                         definition.id,
                                         event.target.value,
                                         activeUserId
@@ -484,6 +522,7 @@ DeviceManagementBoard.propTypes = {
         name: PropTypes.string.isRequired,
         tenantId: PropTypes.string.isRequired,
         published: PropTypes.bool.isRequired,
+        weightStackCount: PropTypes.number.isRequired,
         settingsLocked: PropTypes.bool.isRequired,
         settingsDefinitions: PropTypes.arrayOf(settingsDefinitionShape).isRequired,
         exercises: PropTypes.arrayOf(exerciseShape).isRequired
@@ -496,6 +535,7 @@ DeviceManagementBoard.propTypes = {
       name: PropTypes.string.isRequired,
       tenantId: PropTypes.string.isRequired,
       published: PropTypes.bool,
+      weightStackCount: PropTypes.number.isRequired,
       settingsDefinitions: PropTypes.arrayOf(settingsDefinitionShape).isRequired,
       exercises: PropTypes.arrayOf(
         PropTypes.shape({
@@ -511,6 +551,7 @@ DeviceManagementBoard.propTypes = {
   onAdoptDevice: PropTypes.func.isRequired,
   onRenameDevice: PropTypes.func.isRequired,
   onPublishDevice: PropTypes.func.isRequired,
+  onUpdateWeightStackCount: PropTypes.func.isRequired,
   onAddSetting: PropTypes.func.isRequired,
   onRenameSetting: PropTypes.func.isRequired,
   onRemoveSetting: PropTypes.func.isRequired,

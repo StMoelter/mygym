@@ -9,6 +9,7 @@ export function createDeviceTemplate(name, exerciseName, tenantId) {
     name,
     tenantId,
     published: false,
+    weightStackCount: 1,
     settingsDefinitions: [],
     exercises: [
       {
@@ -26,6 +27,7 @@ export function instantiateDevice(template) {
     libraryDeviceId: template.id,
     tenantId: template.tenantId,
     published: Boolean(template.published),
+    weightStackCount: template.weightStackCount === 2 ? 2 : 1,
     settingsLocked: false,
     settingsDefinitions: template.settingsDefinitions.map((definition) => ({ ...definition })),
     exercises:
@@ -47,7 +49,13 @@ export function instantiateDevice(template) {
 
 export function hasRecordedSettings(device, userId) {
   return device.exercises.some((exercise) => {
-    const values = exercise.settingsValues?.[userId];
+    const tenantValues = exercise.settingsValues?.[device.tenantId];
+
+    if (!tenantValues) {
+      return false;
+    }
+
+    const values = tenantValues[userId];
 
     if (!values) {
       return false;

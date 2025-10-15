@@ -343,6 +343,15 @@ body {
   filter: brightness(1.06);
 }
 
+.primaryAction:disabled,
+.secondaryAction:disabled,
+.dangerAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+}
+
 .secondaryAction {
   background: rgba(148, 163, 184, 0.22);
   color: #e2e8f0;
@@ -359,6 +368,12 @@ body {
   background: rgba(239, 68, 68, 0.18);
   color: #fca5a5;
   border: 1px solid rgba(239, 68, 68, 0.42);
+}
+
+.dangerAction:disabled {
+  background: rgba(148, 163, 184, 0.12);
+  color: rgba(148, 163, 184, 0.72);
+  border-color: rgba(148, 163, 184, 0.35);
 }
 
 .dangerAction:hover,
@@ -647,11 +662,30 @@ body {
   color: #f8fafc;
 }
 
-.deviceMeta {
-  display: block;
+.deviceMetaList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   margin-top: 0.3rem;
   font-size: 0.8rem;
   color: rgba(148, 163, 184, 0.9);
+}
+
+.deviceMetaListItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.deviceMetaListItem::before {
+  content: "\2022";
+  margin-right: 0.4rem;
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.deviceMetaListItem:first-child::before {
+  content: "";
+  margin-right: 0;
 }
 
 .deviceBadges {
@@ -740,6 +774,11 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.85rem;
+}
+
+.numericInput {
+  max-width: 7rem;
+  text-align: right;
 }
 
 

@@ -68,6 +68,7 @@ export default function App() {
     adoptDeviceFromLibrary,
     renameDevice,
     publishDevice,
+    updateWeightStackCount,
     addSetting,
     renameSetting,
     removeSetting,
@@ -188,6 +189,7 @@ export default function App() {
             onAdoptDevice={adoptDeviceFromLibrary}
             onRenameDevice={renameDevice}
             onPublishDevice={publishDevice}
+            onUpdateWeightStackCount={updateWeightStackCount}
             onAddSetting={addSetting}
             onRenameSetting={renameSetting}
             onRemoveSetting={removeSetting}

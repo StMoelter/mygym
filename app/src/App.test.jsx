@@ -231,6 +231,50 @@ describe("App", () => {
     if (settingsItem) {
       expect(within(settingsItem).getByRole("button", { name: /entfernen/i })).toBeDisabled();
     }
+
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(storageKey()));
+      expect(stored).not.toBeNull();
+
+      const storedGym = stored.workspace.gyms.find((gym) => gym.name === "Pulse Arena");
+      expect(storedGym).toBeTruthy();
+
+      const storedDevice = storedGym.devices.find((device) => device.name === "Row Machine");
+      expect(storedDevice).toBeTruthy();
+
+      const storedExercise = storedDevice.exercises[0];
+      const tenantValues = storedExercise.settingsValues["tenant-default"];
+      expect(tenantValues).toBeTruthy();
+
+      const userValues = tenantValues["primary-user"];
+      expect(userValues).toBeTruthy();
+      expect(Object.values(userValues)).toContain("4");
+    });
+  });
+
+  it("lets managers configure weight stacks per device", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
+
+    await user.type(screen.getByLabelText(/gerätename/i), "Dual Press");
+    await user.type(screen.getByLabelText(/erste übung/i), "Dual-arm press");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    const weightSelect = screen.getAllByLabelText(/gewichtsblöcke/i)[0];
+    expect(weightSelect).toHaveValue("1");
+
+    await user.selectOptions(weightSelect, "2");
+
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+
+    const deviceCard = await screen.findByRole("heading", { level: 4, name: /dual press/i });
+    const card = deviceCard.closest("li");
+    expect(card).not.toBeNull();
+    if (card) {
+      expect(within(card).getByText(/2 gewichtsblöcke/i)).toBeVisible();
+    }
   });
 
   it("prevents removing the last exercise of a device", async () => {

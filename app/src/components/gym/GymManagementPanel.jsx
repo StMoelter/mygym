@@ -16,6 +16,7 @@ export default function GymManagementPanel({
   onAdoptDevice,
   onRenameDevice,
   onPublishDevice,
+  onUpdateWeightStackCount,
   onAddSetting,
   onRenameSetting,
   onRemoveSetting,
@@ -87,22 +88,6 @@ export default function GymManagementPanel({
             {t("managementPage.rename.submit")}
           </button>
         </form>
-
-        <div className={styles.dangerZone}>
-          <div>
-            <h3>{t("managementPage.delete.title")}</h3>
-            <p>{t("managementPage.delete.description")}</p>
-            {!canRemove ? <p className={styles.dangerHint}>{t("managementPage.delete.disabledHint")}</p> : null}
-          </div>
-          <button
-            type="button"
-            className={styles.dangerAction}
-            onClick={handleRemoveGym}
-            disabled={!canRemove}
-          >
-            {t("managementPage.delete.action")}
-          </button>
-        </div>
       </div>
 
       <div className={styles.sectionDivider} aria-hidden="true" />
@@ -118,6 +103,7 @@ export default function GymManagementPanel({
           onAdoptDevice={onAdoptDevice}
           onRenameDevice={onRenameDevice}
           onPublishDevice={onPublishDevice}
+          onUpdateWeightStackCount={onUpdateWeightStackCount}
           onAddSetting={onAddSetting}
           onRenameSetting={onRenameSetting}
           onRemoveSetting={onRemoveSetting}
@@ -126,6 +112,24 @@ export default function GymManagementPanel({
           onRemoveExercise={onRemoveExercise}
           onUpdateSettingValue={onUpdateSettingValue}
         />
+      </div>
+
+      <div className={styles.sectionDivider} aria-hidden="true" />
+
+      <div className={styles.dangerZone}>
+        <div>
+          <h3>{t("managementPage.delete.title")}</h3>
+          <p>{t("managementPage.delete.description")}</p>
+          {!canRemove ? <p className={styles.dangerHint}>{t("managementPage.delete.disabledHint")}</p> : null}
+        </div>
+        <button
+          type="button"
+          className={styles.dangerAction}
+          onClick={handleRemoveGym}
+          disabled={!canRemove}
+        >
+          {t("managementPage.delete.action")}
+        </button>
       </div>
     </section>
   );
@@ -147,6 +151,7 @@ GymManagementPanel.propTypes = {
   onAdoptDevice: PropTypes.func.isRequired,
   onRenameDevice: PropTypes.func.isRequired,
   onPublishDevice: PropTypes.func.isRequired,
+  onUpdateWeightStackCount: PropTypes.func.isRequired,
   onAddSetting: PropTypes.func.isRequired,
   onRenameSetting: PropTypes.func.isRequired,
   onRemoveSetting: PropTypes.func.isRequired,

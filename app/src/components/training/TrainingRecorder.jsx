@@ -32,16 +32,22 @@ export default function TrainingRecorder({ gym, activeUserId, onUpdateSettingVal
               <header className={styles.deviceHeader}>
                 <div>
                   <h4>{device.name}</h4>
-                  <span className={styles.deviceMeta}>
-                    {t("devices.card.tenantLabel", { tenant: device.tenantId })}
-                  </span>
+                  <div className={styles.deviceMetaList}>
+                    <span className={styles.deviceMetaListItem}>
+                      {t("devices.card.tenantLabel", { tenant: device.tenantId })}
+                    </span>
+                    <span className={styles.deviceMetaListItem}>
+                      {t("devices.card.weightStackOption", { count: device.weightStackCount ?? 1 })}
+                    </span>
+                  </div>
                 </div>
               </header>
 
               {device.exercises.length === 0 ? null : (
                 <ul className={styles.exerciseList}>
                   {device.exercises.map((exercise) => {
-                    const currentValues = exercise.settingsValues?.[activeUserId] ?? {};
+                    const tenantValues = exercise.settingsValues?.[device.tenantId] ?? {};
+                    const currentValues = tenantValues[activeUserId] ?? {};
 
                     return (
                       <li key={exercise.id} className={styles.exerciseItem}>
@@ -62,7 +68,10 @@ export default function TrainingRecorder({ gym, activeUserId, onUpdateSettingVal
                                 <span>{definition.name}</span>
                                 <input
                                   id={`training-${device.id}-${exercise.id}-${definition.id}`}
-                                  type="text"
+                                  type="number"
+                                  inputMode="decimal"
+                                  step="any"
+                                  className={styles.numericInput}
                                   value={currentValues[definition.id] ?? ""}
                                   onChange={(event) =>
                                     onUpdateSettingValue(
@@ -96,26 +105,27 @@ TrainingRecorder.propTypes = {
   gym: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    devices: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        tenantId: PropTypes.string.isRequired,
-        exercises: PropTypes.arrayOf(
-          PropTypes.shape({
-            id: PropTypes.string.isRequired,
-            name: PropTypes.string.isRequired,
-            settingsValues: PropTypes.objectOf(PropTypes.object)
-          })
-        ).isRequired,
-        settingsDefinitions: PropTypes.arrayOf(
-          PropTypes.shape({
-            id: PropTypes.string.isRequired,
-            name: PropTypes.string.isRequired
-          })
-        ).isRequired
-      })
-    ).isRequired
+      devices: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.string.isRequired,
+          name: PropTypes.string.isRequired,
+          tenantId: PropTypes.string.isRequired,
+          exercises: PropTypes.arrayOf(
+            PropTypes.shape({
+              id: PropTypes.string.isRequired,
+              name: PropTypes.string.isRequired,
+              settingsValues: PropTypes.objectOf(PropTypes.object)
+            })
+          ).isRequired,
+          weightStackCount: PropTypes.number.isRequired,
+          settingsDefinitions: PropTypes.arrayOf(
+            PropTypes.shape({
+              id: PropTypes.string.isRequired,
+              name: PropTypes.string.isRequired
+            })
+          ).isRequired
+        })
+      ).isRequired
   }),
   activeUserId: PropTypes.string.isRequired,
   onUpdateSettingValue: PropTypes.func.isRequired,

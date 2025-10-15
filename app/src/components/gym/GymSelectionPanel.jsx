@@ -31,22 +31,6 @@ export default function GymSelectionPanel({ gyms, selectedGymId, onAddGym, onSel
         </div>
       </header>
 
-      <form className={styles.managementForm} onSubmit={handleSubmit}>
-        <label className={styles.field} htmlFor="new-gym-name">
-          <span>{t("home.create.label")}</span>
-          <input
-            id="new-gym-name"
-            type="text"
-            value={draftName}
-            placeholder={t("home.create.placeholder")}
-            onChange={(event) => setDraftName(event.target.value)}
-          />
-        </label>
-        <button type="submit" className={styles.primaryAction}>
-          {t("home.create.submit")}
-        </button>
-      </form>
-
       <div className={styles.managementList}>
         <div className={styles.managementListHeader}>
           <h3>{t("home.list.title")}</h3>
@@ -87,6 +71,22 @@ export default function GymSelectionPanel({ gyms, selectedGymId, onAddGym, onSel
           </ul>
         )}
       </div>
+
+      <form className={styles.managementForm} onSubmit={handleSubmit}>
+        <label className={styles.field} htmlFor="new-gym-name">
+          <span>{t("home.create.label")}</span>
+          <input
+            id="new-gym-name"
+            type="text"
+            value={draftName}
+            placeholder={t("home.create.placeholder")}
+            onChange={(event) => setDraftName(event.target.value)}
+          />
+        </label>
+        <button type="submit" className={styles.primaryAction}>
+          {t("home.create.submit")}
+        </button>
+      </form>
     </section>
   );
 }

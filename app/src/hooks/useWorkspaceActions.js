@@ -156,6 +156,7 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
             name: updatedDevice.name,
             tenantId: updatedDevice.tenantId,
             published: updatedDevice.published,
+            weightStackCount: updatedDevice.weightStackCount,
             settingsDefinitions: updatedDevice.settingsDefinitions.map((definition) => ({
               id: definition.id,
               name: definition.name
@@ -189,6 +190,15 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
   const publishDevice = useCallback(
     (gymId, deviceId) => {
       updateDevice(gymId, deviceId, (device) => ({ ...device, published: true }));
+    },
+    [updateDevice]
+  );
+
+  const updateWeightStackCount = useCallback(
+    (gymId, deviceId, count) => {
+      const normalised = count === 2 ? 2 : 1;
+
+      updateDevice(gymId, deviceId, (device) => ({ ...device, weightStackCount: normalised }));
     },
     [updateDevice]
   );
@@ -303,7 +313,8 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
           }
 
           const values = exercise.settingsValues ?? {};
-          const userValues = values[userId] ?? {};
+          const tenantValues = values[device.tenantId] ?? {};
+          const userValues = tenantValues[userId] ?? {};
           const nextUserValues = { ...userValues };
           const trimmed = value.trim();
 
@@ -313,12 +324,20 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
             nextUserValues[settingId] = value;
           }
 
-          const nextValues = { ...values };
+          const nextTenantValues = { ...tenantValues };
 
           if (Object.keys(nextUserValues).length === 0) {
-            delete nextValues[userId];
+            delete nextTenantValues[userId];
           } else {
-            nextValues[userId] = nextUserValues;
+            nextTenantValues[userId] = nextUserValues;
+          }
+
+          const nextValues = { ...values };
+
+          if (Object.keys(nextTenantValues).length === 0) {
+            delete nextValues[device.tenantId];
+          } else {
+            nextValues[device.tenantId] = nextTenantValues;
           }
 
           return { ...exercise, settingsValues: nextValues };
@@ -345,6 +364,7 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
     adoptDeviceFromLibrary,
     renameDevice,
     publishDevice,
+    updateWeightStackCount,
     addSetting,
     renameSetting,
     removeSetting,

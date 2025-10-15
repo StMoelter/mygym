@@ -1,5 +1,5 @@
 const STORAGE_KEY = "mygym.workspace";
-const STORAGE_VERSION = 2;
+const STORAGE_VERSION = 3;
 
 function warn(message, error) {
   const logger = typeof globalThis !== "undefined" ? globalThis.console : undefined;
@@ -36,22 +36,78 @@ function normaliseSettingsValues(candidate) {
     return {};
   }
 
+  const entries = Object.entries(candidate);
+
+  if (entries.length === 0) {
+    return {};
+  }
+
+  const resemblesLegacyFormat = entries.every(([, value]) => {
+    if (!value || typeof value !== "object") {
+      return false;
+    }
+
+    return Object.values(value).some((item) => typeof item === "string");
+  });
+
+  if (resemblesLegacyFormat) {
+    const legacyValues = {};
+
+    for (const [userId, values] of entries) {
+      if (!isNonEmptyString(userId) || !values || typeof values !== "object") {
+        continue;
+      }
+
+      const userValues = {};
+
+      for (const [settingId, value] of Object.entries(values)) {
+        if (isNonEmptyString(settingId) && typeof value === "string") {
+          userValues[settingId] = value;
+        }
+      }
+
+      if (Object.keys(userValues).length > 0) {
+        legacyValues[userId] = userValues;
+      }
+    }
+
+    if (Object.keys(legacyValues).length === 0) {
+      return {};
+    }
+
+    return { "tenant-default": legacyValues };
+  }
+
   const normalised = {};
 
-  for (const [userId, values] of Object.entries(candidate)) {
-    if (!isNonEmptyString(userId) || !values || typeof values !== "object") {
+  for (const [tenantId, tenantValues] of entries) {
+    if (!isNonEmptyString(tenantId) || !tenantValues || typeof tenantValues !== "object") {
       continue;
     }
 
     const userValues = {};
 
-    for (const [settingId, value] of Object.entries(values)) {
-      if (isNonEmptyString(settingId) && typeof value === "string") {
-        userValues[settingId] = value;
+    for (const [userId, values] of Object.entries(tenantValues)) {
+      if (!isNonEmptyString(userId) || !values || typeof values !== "object") {
+        continue;
+      }
+
+      const settings = {};
+
+      for (const [settingId, value] of Object.entries(values)) {
+        if (isNonEmptyString(settingId) && typeof value === "string") {
+          settings[settingId] = value;
+        }
+      }
+
+      if (Object.keys(settings).length > 0) {
+        userValues[userId] = settings;
       }
     }
 
-    normalised[userId] = userValues;
+    if (Object.keys(userValues).length > 0) {
+      normalised[tenantId] = userValues;
+    }
   }
 
   return normalised;
@@ -102,6 +158,7 @@ function normaliseDeviceAssignment(candidate) {
     libraryDeviceId: candidate.libraryDeviceId,
     tenantId: isNonEmptyString(candidate.tenantId) ? candidate.tenantId : "tenant-default",
     published: Boolean(candidate.published),
+    weightStackCount: candidate.weightStackCount === 2 ? 2 : 1,
     settingsLocked: Boolean(candidate.settingsLocked),
     settingsDefinitions: normaliseSettingsDefinitions(candidate.settingsDefinitions),
     exercises
@@ -131,6 +188,7 @@ function normaliseLibraryDevice(candidate) {
     name: candidate.name,
     tenantId: isNonEmptyString(candidate.tenantId) ? candidate.tenantId : "tenant-default",
     published: Boolean(candidate.published),
+    weightStackCount: candidate.weightStackCount === 2 ? 2 : 1,
     settingsDefinitions: normaliseSettingsDefinitions(candidate.settingsDefinitions),
     exercises: exercises.map((exercise) => ({ id: exercise.id, name: exercise.name }))
   };
@@ -191,6 +249,10 @@ function createWorkspaceFromGyms(fallbackGyms) {
 
 function runMigrations(serialised) {
   if (serialised?.version === STORAGE_VERSION) {
+    return normaliseWorkspace(serialised.workspace);
+  }
+
+  if (serialised?.version === 2) {
     return normaliseWorkspace(serialised.workspace);
   }
 

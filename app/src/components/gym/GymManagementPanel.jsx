@@ -1,171 +1,157 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "../../App.module.css";
+import DeviceManagementBoard from "../devices/DeviceManagementBoard.jsx";
 
 export default function GymManagementPanel({
-  gyms,
-  selectedGymId,
-  gymSummary,
-  onAddGym,
+  gym,
+  deviceLibrary,
+  deviceSummary,
+  activeUserId,
+  onBack,
   onRenameGym,
   onRemoveGym,
-  onSelectGym
+  onCreateDevice,
+  onAdoptDevice,
+  onRenameDevice,
+  onPublishDevice,
+  onAddSetting,
+  onRenameSetting,
+  onRemoveSetting,
+  onAddExercise,
+  onRenameExercise,
+  onRemoveExercise,
+  onUpdateSettingValue
 }) {
   const { t } = useTranslation();
-  const [newGymName, setNewGymName] = useState("");
-  const [editingGym, setEditingGym] = useState(null);
+  const [renameDraft, setRenameDraft] = useState(gym?.name ?? "");
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const trimmed = newGymName.trim();
+  useEffect(() => {
+    setRenameDraft(gym?.name ?? "");
+  }, [gym?.id, gym?.name]);
 
-    if (!trimmed) {
-      return;
-    }
-
-    onAddGym(trimmed);
-    setNewGymName("");
+  if (!gym) {
+    return null;
   }
 
-  function startEditing(gym) {
-    setEditingGym({ id: gym.id, name: gym.name });
-  }
+  const canRemove = gym.devices.length === 0;
 
   function handleRenameSubmit(event) {
     event.preventDefault();
+    const trimmed = renameDraft.trim();
 
-    if (!editingGym) {
+    if (!trimmed || trimmed === gym.name) {
       return;
     }
 
-    const trimmed = editingGym.name.trim();
+    onRenameGym(gym.id, trimmed);
+  }
 
-    if (!trimmed) {
-      return;
+  function handleRemoveGym() {
+    if (canRemove) {
+      onRemoveGym(gym.id);
     }
-
-    onRenameGym(editingGym.id, trimmed);
-    setEditingGym(null);
-  }
-
-  function handleRenameChange(event) {
-    const { value } = event.target;
-    setEditingGym((current) => (current ? { ...current, name: value } : current));
-  }
-
-  function cancelEditing() {
-    setEditingGym(null);
   }
 
   return (
-    <section className={styles.managementSection} aria-labelledby="gym-management">
-      <div className={styles.managementIntro}>
-        <h2 id="gym-management">{t("management.title")}</h2>
-        <p>{t("management.description")}</p>
+    <section className={`${styles.manager} ${styles.viewPanel}`} aria-labelledby="gym-management">
+      <header className={styles.viewHeader}>
+        <div className={styles.viewNavigation}>
+          <button type="button" className={styles.navigationLink} onClick={onBack}>
+            {t("navigation.backToGym")}
+          </button>
+        </div>
+        <div className={styles.viewIntro}>
+          <p className={styles.viewOverline}>{t("managementPage.overline")}</p>
+          <h2 id="gym-management">{t("managementPage.title", { name: gym.name })}</h2>
+          <p className={styles.viewLead}>{t("managementPage.lead")}</p>
+        </div>
+        <div className={styles.viewActions}>
+          <p className={styles.managerSummary}>{deviceSummary}</p>
+        </div>
+      </header>
+
+      <div className={styles.managementActions}>
+        <form className={styles.managementForm} onSubmit={handleRenameSubmit}>
+          <label className={styles.field} htmlFor="rename-gym-name">
+            <span>{t("managementPage.rename.label")}</span>
+            <input
+              id="rename-gym-name"
+              type="text"
+              value={renameDraft}
+              onChange={(event) => setRenameDraft(event.target.value)}
+            />
+          </label>
+          <button type="submit" className={styles.primaryAction}>
+            {t("managementPage.rename.submit")}
+          </button>
+        </form>
+
+        <div className={styles.dangerZone}>
+          <div>
+            <h3>{t("managementPage.delete.title")}</h3>
+            <p>{t("managementPage.delete.description")}</p>
+            {!canRemove ? <p className={styles.dangerHint}>{t("managementPage.delete.disabledHint")}</p> : null}
+          </div>
+          <button
+            type="button"
+            className={styles.dangerAction}
+            onClick={handleRemoveGym}
+            disabled={!canRemove}
+          >
+            {t("managementPage.delete.action")}
+          </button>
+        </div>
       </div>
 
-      <form className={styles.managementForm} onSubmit={handleSubmit}>
-        <label className={styles.field} htmlFor="new-gym-name">
-          <span>{t("management.form.label")}</span>
-          <input
-            id="new-gym-name"
-            type="text"
-            value={newGymName}
-            placeholder={t("management.form.placeholder")}
-            onChange={(event) => setNewGymName(event.target.value)}
-          />
-        </label>
-        <button type="submit" className={styles.primaryAction}>
-          {t("management.form.submit")}
-        </button>
-      </form>
+      <div className={styles.sectionDivider} aria-hidden="true" />
 
-      <div className={styles.managementList}>
-        <div className={styles.managementListHeader}>
-          <h3>{t("management.list.title")}</h3>
-          <p className={styles.managerSummary}>{gymSummary}</p>
-        </div>
-
-        {gyms.length === 0 ? (
-          <p className={styles.emptyState}>{t("emptyState")}</p>
-        ) : (
-          <ul className={styles.gymList}>
-            {gyms.map((gym) => {
-              const isSelected = gym.id === selectedGymId;
-
-              return (
-                <li key={gym.id} className={styles.gymCard}>
-                  {editingGym?.id === gym.id ? (
-                    <form className={styles.renameForm} onSubmit={handleRenameSubmit}>
-                      <label className={styles.field} htmlFor={`rename-gym-${gym.id}`}>
-                        <span>{t("management.renameForm.label")}</span>
-                        <input
-                          id={`rename-gym-${gym.id}`}
-                          type="text"
-                          value={editingGym.name}
-                          onChange={handleRenameChange}
-                        />
-                      </label>
-                      <div className={styles.cardActions}>
-                        <button type="submit" className={styles.primaryAction}>
-                          {t("management.renameForm.save")}
-                        </button>
-                        <button type="button" onClick={cancelEditing} className={styles.secondaryAction}>
-                          {t("management.renameForm.cancel")}
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <>
-                      <div className={styles.cardHeader}>
-                        <h4>{gym.name}</h4>
-                        <div className={styles.cardActions}>
-                          <button type="button" onClick={() => startEditing(gym)} className={styles.secondaryAction}>
-                            {t("management.actions.rename")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onRemoveGym(gym.id)}
-                            className={styles.dangerAction}
-                          >
-                            {t("management.actions.remove")}
-                          </button>
-                        </div>
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <button
-                          type="button"
-                          onClick={() => onSelectGym(gym.id)}
-                          className={`${styles.secondaryAction} ${styles.manageButton}`}
-                          aria-pressed={isSelected}
-                        >
-                          {t("management.actions.manage")}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
+      <div className={styles.managementDevices}>
+        <h3 className={styles.managementDevicesTitle}>{t("managementPage.devicesTitle")}</h3>
+        <DeviceManagementBoard
+          gym={gym}
+          deviceLibrary={deviceLibrary}
+          activeUserId={activeUserId}
+          deviceSummary={deviceSummary}
+          onCreateDevice={onCreateDevice}
+          onAdoptDevice={onAdoptDevice}
+          onRenameDevice={onRenameDevice}
+          onPublishDevice={onPublishDevice}
+          onAddSetting={onAddSetting}
+          onRenameSetting={onRenameSetting}
+          onRemoveSetting={onRemoveSetting}
+          onAddExercise={onAddExercise}
+          onRenameExercise={onRenameExercise}
+          onRemoveExercise={onRemoveExercise}
+          onUpdateSettingValue={onUpdateSettingValue}
+        />
       </div>
     </section>
   );
 }
 
 GymManagementPanel.propTypes = {
-  gyms: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired
-    })
-  ).isRequired,
-  selectedGymId: PropTypes.string,
-  gymSummary: PropTypes.string.isRequired,
-  onAddGym: PropTypes.func.isRequired,
+  gym: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    devices: PropTypes.array.isRequired
+  }),
+  deviceLibrary: PropTypes.array.isRequired,
+  deviceSummary: PropTypes.string.isRequired,
+  activeUserId: PropTypes.string.isRequired,
+  onBack: PropTypes.func.isRequired,
   onRenameGym: PropTypes.func.isRequired,
   onRemoveGym: PropTypes.func.isRequired,
-  onSelectGym: PropTypes.func.isRequired
+  onCreateDevice: PropTypes.func.isRequired,
+  onAdoptDevice: PropTypes.func.isRequired,
+  onRenameDevice: PropTypes.func.isRequired,
+  onPublishDevice: PropTypes.func.isRequired,
+  onAddSetting: PropTypes.func.isRequired,
+  onRenameSetting: PropTypes.func.isRequired,
+  onRemoveSetting: PropTypes.func.isRequired,
+  onAddExercise: PropTypes.func.isRequired,
+  onRenameExercise: PropTypes.func.isRequired,
+  onRemoveExercise: PropTypes.func.isRequired,
+  onUpdateSettingValue: PropTypes.func.isRequired
 };

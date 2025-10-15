@@ -51,6 +51,12 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
   const removeGym = useCallback(
     (gymId) => {
       setWorkspace((previous) => {
+        const targetGym = previous.gyms.find((gym) => gym.id === gymId);
+
+        if (!targetGym || targetGym.devices.length > 0) {
+          return previous;
+        }
+
         const gyms = previous.gyms.filter((gym) => gym.id !== gymId);
         const nextSelected = previous.selectedGymId === gymId ? gyms[0]?.id ?? null : previous.selectedGymId;
 

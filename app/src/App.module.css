@@ -25,6 +25,94 @@ body {
   color: inherit;
 }
 
+.content {
+  flex: 1;
+  width: min(1120px, calc(100% - 2.75rem));
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(3.25rem, 7vw, 4.5rem);
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.viewPanel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.viewHeader {
+  display: grid;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.viewNavigation {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.navigationLink {
+  background: none;
+  border: none;
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+}
+
+.navigationLink:hover,
+.navigationLink:focus-visible {
+  color: #f8fafc;
+}
+
+.viewIntro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.viewOverline {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.viewLead {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  font-size: 1rem;
+  max-width: 52ch;
+}
+
+.viewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+@media (min-width: 840px) {
+  .viewHeader {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2.25fr) minmax(0, 1fr);
+    align-items: end;
+  }
+
+  .viewNavigation {
+    justify-content: flex-start;
+  }
+
+  .viewActions {
+    justify-content: flex-end;
+  }
+}
+
 .header {
   display: flex;
   flex-direction: column;
@@ -155,6 +243,26 @@ body {
   backdrop-filter: blur(12px);
 }
 
+.managementForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.managementList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.managementListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
 .managerHeader {
   display: flex;
   flex-direction: column;
@@ -175,13 +283,6 @@ body {
 .managerSummary {
   font-size: 0.95rem;
   color: rgba(226, 232, 240, 0.68);
-}
-
-.addForm {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
 }
 
 .field {
@@ -310,6 +411,33 @@ body {
   backdrop-filter: blur(8px);
 }
 
+.cardTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cardMeta {
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.statusBadge {
+  align-self: flex-start;
+  margin-top: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: rgba(30, 64, 175, 0.32);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(191, 219, 254, 0.92);
+}
+
 .cardHeader {
   display: flex;
   justify-content: space-between;
@@ -350,11 +478,95 @@ body {
   padding-inline: 1.1rem;
 }
 
+.managementActions {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.dangerZone {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.4rem 1.5rem;
+  border-radius: 1.2rem;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(127, 29, 29, 0.18);
+}
+
+.dangerZone h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: rgba(248, 250, 252, 0.92);
+}
+
+.dangerZone p {
+  margin: 0;
+  color: rgba(252, 165, 165, 0.78);
+}
+
+.dangerHint {
+  color: rgba(252, 165, 165, 0.9);
+  font-size: 0.85rem;
+}
+
+.sectionDivider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.35), transparent);
+  border: none;
+}
+
+.managementDevices {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.managementDevicesTitle {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #f8fafc;
+}
+
 .deviceBoard {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
   margin-top: 2rem;
+}
+
+.trainingBoard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.trainingBoardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.trainingBoardHeader h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: #f8fafc;
+}
+
+.trainingBoardHeader p {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.trainingEmptyState {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border-radius: 1.1rem;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.55);
+  color: rgba(226, 232, 240, 0.8);
 }
 
 .deviceBoardHeader {
@@ -590,7 +802,7 @@ body {
 }
 
 @media (max-width: 640px) {
-  .addForm {
+  .managementForm {
     flex-direction: column;
     align-items: stretch;
   }

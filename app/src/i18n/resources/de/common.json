@@ -5,32 +5,63 @@
     "lead": "Behalte deine Gyms im Griff, plane Wochen flexibel und fokussiere die wichtigen Einheiten.",
     "greeting": "Willkommen zurück, {{name}}"
   },
-  "management": {
-    "title": "Standortübersicht",
-    "description": "Halte fest, wo du coachst, und passe Namen an, sobald sich Pläne ändern.",
-    "form": {
-      "label": "Neuer Standort",
+  "home": {
+    "overline": "Standortauswahl",
+    "title": "Starte mit einem Gym",
+    "lead": "Wähle einen Standort, um Trainingsdaten festzuhalten, oder lege ein neues Gym an.",
+    "create": {
+      "label": "Neues Gym",
       "placeholder": "z. B. Riverside Performance Loft",
-      "submit": "Standort hinzufügen"
+      "submit": "Gym hinzufügen"
     },
     "list": {
-      "title": "Gespeicherte Standorte",
-      "summary_zero": "Noch keine Standorte gespeichert",
-      "summary_one": "{{count}} Standort gespeichert",
-      "summary_other": "{{count}} Standorte gespeichert"
+      "title": "Gespeicherte Gyms",
+      "summary_zero": "Noch keine Gyms gespeichert",
+      "summary_one": "{{count}} Gym gespeichert",
+      "summary_other": "{{count}} Gyms gespeichert",
+      "empty": "Noch keine Gyms angelegt. Lege deinen ersten Standort an, um zu starten."
     },
-    "renameForm": {
-      "label": "Standortnamen bearbeiten",
-      "save": "Speichern",
-      "cancel": "Abbrechen"
-    },
-    "actions": {
-      "rename": "Umbenennen",
-      "remove": "Entfernen",
-      "manage": "Geräte verwalten"
+    "card": {
+      "devices_zero": "Noch keine Geräte vorbereitet",
+      "devices_one": "{{count}} Gerät vorbereitet",
+      "devices_other": "{{count}} Geräte vorbereitet",
+      "lastVisited": "Zuletzt geöffnet",
+      "open": "Gym öffnen"
     }
   },
-  "emptyState": "Noch keine Standorte erfasst. Lege den ersten Trainingsort an und halte deine Planung schlank.",
+  "navigation": {
+    "backToGyms": "Zur Standortauswahl",
+    "openManagement": "Gym verwalten",
+    "backToGym": "Zur Trainingsübersicht"
+  },
+  "gym": {
+    "overview": {
+      "overline": "Trainingsübersicht",
+      "lead": "Halte deine Einheiten fest und sieh sofort, welche Geräte bereitstehen."
+    },
+    "training": {
+      "title": "Trainingstagebuch",
+      "description": "Dokumentiere für jede Übung die aktuellen Geräteeinstellungen. Die Werte bleiben pro Coach gespeichert.",
+      "empty": "In diesem Gym sind noch keine Geräte hinterlegt.",
+      "emptyCta": "Geräte jetzt verwalten"
+    }
+  },
+  "managementPage": {
+    "overline": "Gym-Verwaltung",
+    "title": "Verwalte {{name}}",
+    "lead": "Passe Namen und Geräte an. Änderungen wirken sich auf alle zukünftigen Trainings aus.",
+    "rename": {
+      "label": "Gym-Name",
+      "submit": "Name aktualisieren"
+    },
+    "delete": {
+      "title": "Gym löschen",
+      "description": "Du kannst ein Gym nur entfernen, wenn keine Geräte zugeordnet sind.",
+      "disabledHint": "Entferne oder verschiebe zuerst alle Geräte.",
+      "action": "Gym endgültig löschen"
+    },
+    "devicesTitle": "Geräte & Übungen"
+  },
   "footer": "SessionAtlas hält deine Coaching-Orga schlank.",
   "settings": {
     "toggle": "Einstellungen",
@@ -50,8 +81,8 @@
     "save": "Name speichern"
   },
   "devices": {
-    "title": "Geräte in {{gym}}",
-    "description": "Definiere Geräteeinstellungen und dokumentiere deine Übungen darauf.",
+    "title": "Geräteverwaltung für {{gym}}",
+    "description": "Konfiguriere Geräte, Einstellungen und Übungen, bevor sie im Training genutzt werden.",
     "summary_zero": "Noch keine Geräte hinterlegt",
     "summary_one": "{{count}} Gerät vorbereitet",
     "summary_other": "{{count}} Geräte vorbereitet",

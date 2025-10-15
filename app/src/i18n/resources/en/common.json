@@ -43,7 +43,23 @@
       "title": "Training journal",
       "description": "Record the current control values per exercise. Entries stay scoped to the active coach.",
       "empty": "No devices configured for this gym yet.",
-      "emptyCta": "Configure devices now"
+      "emptyCta": "Configure devices now",
+      "deviceLastPerformed": "Last set: {{timestamp}}",
+      "deviceLastPerformedNever": "No sets recorded yet",
+      "log": {
+      "lastPerformed": "Last set saved {{timestamp}}",
+      "lastPerformedNever": "No sets saved for this exercise yet.",
+      "weightLabel": "Weight stack {{index}} ({{unit}})",
+      "weightUnitLabel": "Weight unit",
+      "weightUnitKg": "Kilograms (kg)",
+      "weightUnitLb": "Pounds (lb)",
+      "weightUnitAbbreviationKg": "kg",
+      "weightUnitAbbreviationLb": "lb",
+      "repetitionsLabel": "Repetitions",
+      "submit": "Save set",
+      "historyTitle": "Recent sets",
+      "historyEntry": "{{timestamp}} · {{repetitions}} reps · {{weights}} {{unit}}"
+      }
     }
   },
   "managementPage": {

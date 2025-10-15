@@ -43,7 +43,23 @@
       "title": "Trainingstagebuch",
       "description": "Dokumentiere für jede Übung die aktuellen Geräteeinstellungen. Die Werte bleiben pro Coach gespeichert.",
       "empty": "In diesem Gym sind noch keine Geräte hinterlegt.",
-      "emptyCta": "Geräte jetzt verwalten"
+      "emptyCta": "Geräte jetzt verwalten",
+      "deviceLastPerformed": "Zuletzt trainiert: {{timestamp}}",
+      "deviceLastPerformedNever": "Noch kein Satz dokumentiert",
+      "log": {
+      "lastPerformed": "Letzter Satz: {{timestamp}}",
+      "lastPerformedNever": "Noch kein Satz für diese Übung erfasst.",
+      "weightLabel": "Gewichtsblock {{index}} ({{unit}})",
+      "weightUnitLabel": "Gewichtseinheit",
+      "weightUnitKg": "Kilogramm (kg)",
+      "weightUnitLb": "Pfund (lb)",
+      "weightUnitAbbreviationKg": "kg",
+      "weightUnitAbbreviationLb": "lb",
+      "repetitionsLabel": "Wiederholungen",
+      "submit": "Satz speichern",
+      "historyTitle": "Letzte Sätze",
+      "historyEntry": "{{timestamp}} · {{repetitions}} Wdh. · {{weights}} {{unit}}"
+      }
     }
   },
   "managementPage": {

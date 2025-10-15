@@ -75,7 +75,8 @@ export default function App() {
     addExercise,
     renameExercise,
     removeExercise,
-    updateSettingValue
+    updateSettingValue,
+    recordExerciseSet
   } = workspaceActions;
 
   const handleToggleSettings = useCallback(() => {
@@ -173,6 +174,7 @@ export default function App() {
             onOpenManagement={handleOpenManagement}
             onBackToSelection={handleBackToSelection}
             onUpdateSettingValue={updateSettingValue}
+            onRecordExerciseSet={recordExerciseSet}
           />
         ) : null}
 

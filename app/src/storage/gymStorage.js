@@ -1,5 +1,5 @@
 const STORAGE_KEY = "mygym.workspace";
-const STORAGE_VERSION = 3;
+const STORAGE_VERSION = 5;
 
 function warn(message, error) {
   const logger = typeof globalThis !== "undefined" ? globalThis.console : undefined;
@@ -113,6 +113,108 @@ function normaliseSettingsValues(candidate) {
   return normalised;
 }
 
+function normaliseTrainingEntry(candidate) {
+  if (!candidate || typeof candidate !== "object") {
+    return null;
+  }
+
+  if (!isNonEmptyString(candidate.id)) {
+    return null;
+  }
+
+  const performedAt = isNonEmptyString(candidate.performedAt) ? candidate.performedAt : null;
+
+  if (!performedAt || Number.isNaN(Date.parse(performedAt))) {
+    return null;
+  }
+
+  const loadsSource = Array.isArray(candidate.loads) ? candidate.loads : [];
+  const loads = loadsSource
+    .map((value) => {
+      if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+        return Math.round(value * 100) / 100;
+      }
+
+      if (typeof value === "string") {
+        const parsed = Number.parseFloat(value.trim().replace(",", "."));
+
+        if (Number.isFinite(parsed) && parsed >= 0) {
+          return Math.round(parsed * 100) / 100;
+        }
+      }
+
+      return null;
+    })
+    .filter((value) => value !== null);
+
+  if (loads.length === 0) {
+    return null;
+  }
+
+  let repetitionsValue;
+
+  if (typeof candidate.repetitions === "number" && Number.isFinite(candidate.repetitions)) {
+    repetitionsValue = Math.trunc(candidate.repetitions);
+  } else if (typeof candidate.repetitions === "string") {
+    const parsed = Number.parseInt(candidate.repetitions.trim(), 10);
+
+    if (Number.isFinite(parsed)) {
+      repetitionsValue = parsed;
+    }
+  }
+
+  if (typeof repetitionsValue !== "number" || !Number.isFinite(repetitionsValue) || repetitionsValue <= 0) {
+    return null;
+  }
+
+  const unit = candidate.unit === "lb" ? "lb" : "kg";
+
+  return {
+    id: candidate.id,
+    performedAt,
+    loads,
+    repetitions: repetitionsValue,
+    unit
+  };
+}
+
+function normaliseTrainingLog(candidate) {
+  if (!candidate || typeof candidate !== "object") {
+    return {};
+  }
+
+  const normalised = {};
+
+  for (const [tenantId, tenantLog] of Object.entries(candidate)) {
+    if (!isNonEmptyString(tenantId) || !tenantLog || typeof tenantLog !== "object") {
+      continue;
+    }
+
+    const userLogs = {};
+
+    for (const [userId, entries] of Object.entries(tenantLog)) {
+      if (!isNonEmptyString(userId) || !Array.isArray(entries)) {
+        continue;
+      }
+
+      const normalisedEntries = entries.map(normaliseTrainingEntry).filter(Boolean);
+
+      if (normalisedEntries.length === 0) {
+        continue;
+      }
+
+      normalisedEntries.sort((a, b) => Date.parse(b.performedAt) - Date.parse(a.performedAt));
+      userLogs[userId] = normalisedEntries;
+    }
+
+    if (Object.keys(userLogs).length > 0) {
+      normalised[tenantId] = userLogs;
+    }
+  }
+
+  return normalised;
+}
+
 function normaliseExercises(candidate, { allowEmpty = false } = {}) {
   if (!Array.isArray(candidate)) {
     return allowEmpty ? [] : undefined;
@@ -123,7 +225,8 @@ function normaliseExercises(candidate, { allowEmpty = false } = {}) {
     .map((exercise) => ({
       id: exercise.id,
       name: exercise.name,
-      settingsValues: normaliseSettingsValues(exercise.settingsValues)
+      settingsValues: normaliseSettingsValues(exercise.settingsValues),
+      trainingLog: normaliseTrainingLog(exercise.trainingLog)
     }));
 
   if (!allowEmpty && exercises.length === 0) {
@@ -249,6 +352,14 @@ function createWorkspaceFromGyms(fallbackGyms) {
 
 function runMigrations(serialised) {
   if (serialised?.version === STORAGE_VERSION) {
+    return normaliseWorkspace(serialised.workspace);
+  }
+
+  if (serialised?.version === 4) {
+    return normaliseWorkspace(serialised.workspace);
+  }
+
+  if (serialised?.version === 3) {
     return normaliseWorkspace(serialised.workspace);
   }
 

@@ -262,7 +262,8 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
           {
             id: generateId("exercise"),
             name: trimmed,
-            settingsValues: {}
+            settingsValues: {},
+            trainingLog: {}
           }
         ]
       }));
@@ -355,6 +356,77 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
     [updateDevice]
   );
 
+  const recordExerciseSet = useCallback(
+    (gymId, deviceId, exerciseId, loads, repetitions, unit, userId) => {
+      updateDevice(gymId, deviceId, (device) => {
+        if (!Array.isArray(loads)) {
+          return device;
+        }
+
+        const normalisedLoads = Array.from({ length: device.weightStackCount }, (_, index) => {
+          const raw = loads[index];
+          const value = typeof raw === "number" ? String(raw) : String(raw ?? "");
+          const trimmed = value.trim();
+
+          if (trimmed.length === 0) {
+            return null;
+          }
+
+          const numeric = Number.parseFloat(trimmed.replace(",", "."));
+
+          if (!Number.isFinite(numeric) || numeric < 0) {
+            return null;
+          }
+
+          return Math.round(numeric * 100) / 100;
+        });
+
+        if (normalisedLoads.some((load) => load === null)) {
+          return device;
+        }
+
+        const repetitionsValue = typeof repetitions === "number" ? repetitions : Number.parseInt(String(repetitions ?? "").trim(), 10);
+
+        if (!Number.isFinite(repetitionsValue) || repetitionsValue <= 0) {
+          return device;
+        }
+
+        const resolvedUnit = unit === "lb" ? "lb" : "kg";
+
+        const entry = {
+          id: generateId("set"),
+          performedAt: new Date().toISOString(),
+          loads: normalisedLoads,
+          repetitions: repetitionsValue,
+          unit: resolvedUnit
+        };
+
+        const exercises = device.exercises.map((exercise) => {
+          if (exercise.id !== exerciseId) {
+            return exercise;
+          }
+
+          const currentLog = exercise.trainingLog ?? {};
+          const tenantLog = currentLog[device.tenantId] ?? {};
+          const userLog = tenantLog[userId] ?? [];
+          const nextUserLog = [entry, ...userLog].slice(0, 20);
+          const nextTenantLog = { ...tenantLog, [userId]: nextUserLog };
+
+          return {
+            ...exercise,
+            trainingLog: {
+              ...currentLog,
+              [device.tenantId]: nextTenantLog
+            }
+          };
+        });
+
+        return { ...device, exercises };
+      });
+    },
+    [updateDevice]
+  );
+
   return {
     selectGym,
     addGym,
@@ -371,6 +443,7 @@ export function useWorkspaceActions(setWorkspace, defaultTenantId) {
     addExercise,
     renameExercise,
     removeExercise,
-    updateSettingValue
+    updateSettingValue,
+    recordExerciseSet
   };
 }

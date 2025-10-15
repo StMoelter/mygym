@@ -27,6 +27,21 @@ function renderApp() {
   return view;
 }
 
+async function openGym(user, gymName = "Pulse Arena") {
+  const cardHeading = await screen.findByRole("heading", { level: 4, name: new RegExp(gymName, "i") });
+  const card = cardHeading.closest("li");
+  expect(card).not.toBeNull();
+
+  if (card) {
+    await user.click(within(card).getByRole("button", { name: /gym öffnen/i }));
+  }
+}
+
+async function openManagement(user, gymName = "Pulse Arena") {
+  await openGym(user, gymName);
+  await user.click(screen.getByRole("button", { name: /gym verwalten/i }));
+}
+
 describe("App", () => {
   beforeAll(() => {
     consoleErrorSpy = vi.spyOn(globalThis.console, "error").mockImplementation(() => {});
@@ -46,42 +61,70 @@ describe("App", () => {
     consoleWarnSpy.mockRestore();
   });
 
-  it("allows creating a new gym", async () => {
+  it("shows the gym selection and lets users create a new gym", async () => {
     renderApp();
     const user = userEvent.setup();
 
-    const input = screen.getByLabelText(/neuer standort/i);
+    expect(screen.getByRole("heading", { level: 2, name: /starte mit einem gym/i })).toBeVisible();
+
+    const input = screen.getByLabelText(/neues gym/i);
     await user.clear(input);
     await user.type(input, "Coast Performance Hub");
-    await user.click(screen.getByRole("button", { name: /standort hinzufügen/i }));
+    await user.click(screen.getByRole("button", { name: /gym hinzufügen/i }));
 
-    expect(screen.getByRole("heading", { level: 4, name: /coast performance hub/i })).toBeVisible();
-    expect(input).toHaveValue("");
+    expect(screen.getByRole("heading", { level: 2, name: /coast performance hub/i })).toBeVisible();
   });
 
-  it("supports renaming an existing gym", async () => {
+  it("supports renaming an existing gym from the management view", async () => {
     renderApp();
     const user = userEvent.setup();
 
-    await user.click(screen.getAllByRole("button", { name: /umbenennen/i })[0]);
+    await openManagement(user, "Pulse Arena");
 
-    const renameInput = screen.getByLabelText(/standortnamen bearbeiten/i);
+    const renameInput = screen.getByLabelText(/gym-name/i);
     await user.clear(renameInput);
     await user.type(renameInput, "Power District Arena");
-    await user.click(screen.getByRole("button", { name: /speichern/i }));
+    await user.click(screen.getByRole("button", { name: /name aktualisieren/i }));
 
-    expect(screen.getByRole("heading", { level: 4, name: /power district arena/i })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: /verwalte power district arena/i })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+    expect(screen.getByRole("heading", { level: 2, name: /power district arena/i })).toBeVisible();
   });
 
-  it("removes a gym from the list", async () => {
+  it("blocks deleting gyms that still contain devices", async () => {
     renderApp();
     const user = userEvent.setup();
 
-    expect(screen.getByRole("heading", { level: 4, name: /pulse arena/i })).toBeInTheDocument();
+    await openManagement(user, "Pulse Arena");
 
-    await user.click(screen.getAllByRole("button", { name: /entfernen/i })[0]);
+    await user.type(screen.getByLabelText(/gerätename/i), "Row Machine");
+    await user.type(screen.getByLabelText(/erste übung/i), "Seated row");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
 
-    expect(screen.queryByRole("heading", { level: 4, name: /pulse arena/i })).not.toBeInTheDocument();
+    const deleteButton = screen.getByRole("button", { name: /gym endgültig löschen/i });
+    expect(deleteButton).toBeDisabled();
+  });
+
+  it("allows deleting a gym without devices", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    const input = screen.getByLabelText(/neues gym/i);
+    await user.type(input, "Minimal Studio");
+    await user.click(screen.getByRole("button", { name: /gym hinzufügen/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur standortauswahl/i }));
+    await openManagement(user, "Minimal Studio");
+
+    const deleteButton = screen.getByRole("button", { name: /gym endgültig löschen/i });
+    expect(deleteButton).toBeEnabled();
+
+    await user.click(deleteButton);
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+    await user.click(screen.getByRole("button", { name: /zur standortauswahl/i }));
+
+    expect(screen.queryByRole("heading", { level: 4, name: /minimal studio/i })).not.toBeInTheDocument();
   });
 
   it("loads gyms from persistent storage", async () => {
@@ -104,28 +147,36 @@ describe("App", () => {
     expect(screen.getByRole("heading", { level: 4, name: /downtown powerhouse/i })).toBeVisible();
   });
 
-  it("persists gyms to local storage after modifications", async () => {
+  it("persists gym changes to local storage", async () => {
     renderApp();
     const user = userEvent.setup();
 
-    await user.click(screen.getAllByRole("button", { name: /entfernen/i })[0]);
+    const input = screen.getByLabelText(/neues gym/i);
+    await user.type(input, "Transient Studio");
+    await user.click(screen.getByRole("button", { name: /gym hinzufügen/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur standortauswahl/i }));
+    await openManagement(user, "Transient Studio");
+    await user.click(screen.getByRole("button", { name: /gym endgültig löschen/i }));
 
     await waitFor(() => {
       const stored = JSON.parse(window.localStorage.getItem(storageKey()));
       expect(stored.version).toBe(storageVersion());
       expect(stored.workspace.gyms).toEqual(
         expect.arrayContaining([
+          expect.objectContaining({ name: "Pulse Arena" }),
           expect.objectContaining({ name: "Iron Haven" }),
           expect.objectContaining({ name: "Urban Move Loft" })
         ])
       );
-      expect(stored.workspace.gyms).toHaveLength(2);
     });
   });
 
   it("allows creating a device with an initial exercise", async () => {
     renderApp();
     const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
 
     const deviceNameInput = screen.getByLabelText(/gerätename/i);
     const exerciseInput = screen.getByLabelText(/erste übung/i);
@@ -142,11 +193,14 @@ describe("App", () => {
     renderApp();
     const user = userEvent.setup();
 
+    await openManagement(user, "Pulse Arena");
     await user.type(screen.getByLabelText(/gerätename/i), "Chest Press");
     await user.type(screen.getByLabelText(/erste übung/i), "Bench press");
     await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
 
-    await user.click(screen.getAllByRole("button", { name: /geräte verwalten/i })[1]);
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+    await user.click(screen.getByRole("button", { name: /zur standortauswahl/i }));
+    await openManagement(user, "Iron Haven");
 
     const select = screen.getByLabelText(/gerätebibliothek/i);
     await user.selectOptions(select, screen.getByRole("option", { name: /chest press/i }));
@@ -158,6 +212,8 @@ describe("App", () => {
   it("locks device settings after values are recorded", async () => {
     renderApp();
     const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
 
     await user.type(screen.getByLabelText(/gerätename/i), "Row Machine");
     await user.type(screen.getByLabelText(/erste übung/i), "Seated row");
@@ -180,6 +236,8 @@ describe("App", () => {
   it("prevents removing the last exercise of a device", async () => {
     renderApp();
     const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
 
     await user.type(screen.getByLabelText(/gerätename/i), "Cable Tower");
     await user.type(screen.getByLabelText(/erste übung/i), "Face pull");
@@ -213,7 +271,7 @@ describe("App", () => {
     renderApp();
 
     expect(screen.getByRole("button", { name: /settings/i })).toBeVisible();
-    expect(screen.getByRole("heading", { level: 2, name: /gym overview/i })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: /pick where to train/i })).toBeVisible();
   });
 
   it("shows the default profile name in the greeting", async () => {

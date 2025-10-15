@@ -1,10 +1,11 @@
-import { useCallback, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./App.module.css";
 import AppHeader from "./components/AppHeader.jsx";
 import SettingsPanel from "./components/SettingsPanel.jsx";
 import GymManagementPanel from "./components/gym/GymManagementPanel.jsx";
-import DeviceManagementBoard from "./components/devices/DeviceManagementBoard.jsx";
+import GymOverview from "./components/gym/GymOverview.jsx";
+import GymSelectionPanel from "./components/gym/GymSelectionPanel.jsx";
 import { useWorkspaceActions } from "./hooks/useWorkspaceActions.js";
 import { createInitialWorkspace, loadWorkspace, saveWorkspace } from "./storage/gymStorage.js";
 import { loadUser, saveUser } from "./storage/userStorage.js";
@@ -24,6 +25,7 @@ export default function App() {
   const [workspace, setWorkspace] = useState(() => loadWorkspace(initialWorkspace));
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [profile, setProfile] = useState(() => loadUser(DEFAULT_USER));
+  const [activeView, setActiveView] = useState("home");
 
   const gyms = workspace.gyms;
   const selectedGymId = workspace.selectedGymId ?? (gyms[0]?.id ?? null);
@@ -43,8 +45,12 @@ export default function App() {
     saveUser(profile);
   }, [profile]);
 
-  const totalGyms = gyms.length;
-  const gymSummary = t("management.list.summary", { count: totalGyms });
+  useEffect(() => {
+    if ((activeView === "gym" || activeView === "manage") && !selectedGym) {
+      setActiveView("home");
+    }
+  }, [activeView, selectedGym]);
+
   const deviceSummary = selectedGym
     ? t("devices.summary", { count: selectedGym.devices.length })
     : t("devices.summary", { count: 0 });
@@ -52,6 +58,24 @@ export default function App() {
   const resolvedLanguage = i18n.resolvedLanguage ?? i18n.language;
   const displayName = profile?.name?.trim() ? profile.name : t("profile.defaultName");
   const adoptableDevices = workspace.deviceLibrary;
+
+  const {
+    selectGym,
+    addGym,
+    renameGym,
+    removeGym,
+    createDevice,
+    adoptDeviceFromLibrary,
+    renameDevice,
+    publishDevice,
+    addSetting,
+    renameSetting,
+    removeSetting,
+    addExercise,
+    renameExercise,
+    removeExercise,
+    updateSettingValue
+  } = workspaceActions;
 
   const handleToggleSettings = useCallback(() => {
     setIsSettingsOpen((state) => !state);
@@ -83,6 +107,34 @@ export default function App() {
     });
   }, []);
 
+  const handleSelectGym = useCallback(
+    (gymId) => {
+      selectGym(gymId);
+      setActiveView("gym");
+    },
+    [selectGym]
+  );
+
+  const handleAddGym = useCallback(
+    (name) => {
+      addGym(name);
+      setActiveView("gym");
+    },
+    [addGym]
+  );
+
+  const handleOpenManagement = useCallback(() => {
+    setActiveView("manage");
+  }, []);
+
+  const handleBackToOverview = useCallback(() => {
+    setActiveView("gym");
+  }, []);
+
+  const handleBackToSelection = useCallback(() => {
+    setActiveView("home");
+  }, []);
+
   return (
     <div className={styles.appShell}>
       <AppHeader
@@ -103,37 +155,48 @@ export default function App() {
       ) : null}
 
       <main className={styles.content}>
-        <section className={styles.layout}>
-          <GymManagementPanel
+        {activeView === "home" ? (
+          <GymSelectionPanel
             gyms={gyms}
-            selectedGymId={selectedGymId}
-            gymSummary={gymSummary}
-            onAddGym={workspaceActions.addGym}
-            onRenameGym={workspaceActions.renameGym}
-            onRemoveGym={workspaceActions.removeGym}
-            onSelectGym={workspaceActions.selectGym}
+            selectedGymId={selectedGymId ?? undefined}
+            onAddGym={handleAddGym}
+            onSelectGym={handleSelectGym}
           />
+        ) : null}
 
-          <div className={styles.divider} aria-hidden="true" />
+        {activeView === "gym" && selectedGym ? (
+          <GymOverview
+            gym={selectedGym}
+            deviceSummary={deviceSummary}
+            activeUserId={activeUserId}
+            onOpenManagement={handleOpenManagement}
+            onBackToSelection={handleBackToSelection}
+            onUpdateSettingValue={updateSettingValue}
+          />
+        ) : null}
 
-          <DeviceManagementBoard
+        {activeView === "manage" && selectedGym ? (
+          <GymManagementPanel
             gym={selectedGym}
             deviceLibrary={adoptableDevices}
-            activeUserId={activeUserId}
             deviceSummary={deviceSummary}
-            onCreateDevice={workspaceActions.createDevice}
-            onAdoptDevice={workspaceActions.adoptDeviceFromLibrary}
-            onRenameDevice={workspaceActions.renameDevice}
-            onPublishDevice={workspaceActions.publishDevice}
-            onAddSetting={workspaceActions.addSetting}
-            onRenameSetting={workspaceActions.renameSetting}
-            onRemoveSetting={workspaceActions.removeSetting}
-            onAddExercise={workspaceActions.addExercise}
-            onRenameExercise={workspaceActions.renameExercise}
-            onRemoveExercise={workspaceActions.removeExercise}
-            onUpdateSettingValue={workspaceActions.updateSettingValue}
+            activeUserId={activeUserId}
+            onBack={handleBackToOverview}
+            onRenameGym={renameGym}
+            onRemoveGym={removeGym}
+            onCreateDevice={createDevice}
+            onAdoptDevice={adoptDeviceFromLibrary}
+            onRenameDevice={renameDevice}
+            onPublishDevice={publishDevice}
+            onAddSetting={addSetting}
+            onRenameSetting={renameSetting}
+            onRemoveSetting={removeSetting}
+            onAddExercise={addExercise}
+            onRenameExercise={renameExercise}
+            onRemoveExercise={removeExercise}
+            onUpdateSettingValue={updateSettingValue}
           />
-        </section>
+        ) : null}
       </main>
 
       <footer className={styles.footer}>

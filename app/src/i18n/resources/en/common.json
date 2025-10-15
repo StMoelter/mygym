@@ -5,32 +5,63 @@
     "lead": "Keep your gyms tidy, plan the week ahead, and stay focused on the sessions that matter.",
     "greeting": "Welcome back, {{name}}"
   },
-  "management": {
-    "title": "Gym overview",
-    "description": "Capture the studios you coach in and adjust them whenever plans change.",
-    "form": {
-      "label": "New location",
+  "home": {
+    "overline": "Gym selection",
+    "title": "Pick where to train",
+    "lead": "Choose a location to log sessions or add a new gym before you begin.",
+    "create": {
+      "label": "New gym",
       "placeholder": "e.g. Riverside Performance Loft",
-      "submit": "Add location"
+      "submit": "Add gym"
     },
     "list": {
-      "title": "Saved locations",
-      "summary_zero": "No locations saved yet",
-      "summary_one": "{{count}} location saved",
-      "summary_other": "{{count}} locations saved"
+      "title": "Saved gyms",
+      "summary_zero": "No gyms saved yet",
+      "summary_one": "{{count}} gym saved",
+      "summary_other": "{{count}} gyms saved",
+      "empty": "No gyms captured yet. Create your first location to get started."
     },
-    "renameForm": {
-      "label": "Edit location name",
-      "save": "Save",
-      "cancel": "Cancel"
-    },
-    "actions": {
-      "rename": "Rename",
-      "remove": "Remove",
-      "manage": "Manage devices"
+    "card": {
+      "devices_zero": "No devices prepared yet",
+      "devices_one": "{{count}} device prepared",
+      "devices_other": "{{count}} devices prepared",
+      "lastVisited": "Last opened",
+      "open": "Open gym"
     }
   },
-  "emptyState": "No locations tracked yet. Add your first gym to keep planning simple.",
+  "navigation": {
+    "backToGyms": "Back to gym list",
+    "openManagement": "Manage gym",
+    "backToGym": "Back to training"
+  },
+  "gym": {
+    "overview": {
+      "overline": "Training overview",
+      "lead": "Capture today's work and see at a glance which devices are ready."
+    },
+    "training": {
+      "title": "Training journal",
+      "description": "Record the current control values per exercise. Entries stay scoped to the active coach.",
+      "empty": "No devices configured for this gym yet.",
+      "emptyCta": "Configure devices now"
+    }
+  },
+  "managementPage": {
+    "overline": "Gym management",
+    "title": "Manage {{name}}",
+    "lead": "Adjust the name and device setup. Every change carries over into future sessions.",
+    "rename": {
+      "label": "Gym name",
+      "submit": "Update name"
+    },
+    "delete": {
+      "title": "Delete gym",
+      "description": "You can only delete a gym when no devices are assigned.",
+      "disabledHint": "Remove or reassign all devices first.",
+      "action": "Delete gym permanently"
+    },
+    "devicesTitle": "Devices & exercises"
+  },
   "footer": "SessionAtlas keeps coaching logistics lightweight.",
   "settings": {
     "toggle": "Settings",
@@ -50,8 +81,8 @@
     "save": "Save name"
   },
   "devices": {
-    "title": "Devices in {{gym}}",
-    "description": "Define equipment setups and document how you use them with each exercise.",
+    "title": "Device management for {{gym}}",
+    "description": "Define devices, controls, and exercises before they show up in training.",
     "summary_zero": "No devices added yet",
     "summary_one": "{{count}} device ready",
     "summary_other": "{{count}} devices ready",

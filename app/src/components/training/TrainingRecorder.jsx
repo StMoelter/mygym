@@ -1,9 +1,17 @@
 import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import styles from "../../App.module.css";
+import ExerciseSetRecorder from "./ExerciseSetRecorder.jsx";
+import { formatDateTime } from "../../utils/datetime.js";
 
-export default function TrainingRecorder({ gym, activeUserId, onUpdateSettingValue, onOpenManagement }) {
-  const { t } = useTranslation();
+export default function TrainingRecorder({
+  gym,
+  activeUserId,
+  onUpdateSettingValue,
+  onRecordExerciseSet,
+  onOpenManagement
+}) {
+  const { t, i18n } = useTranslation();
 
   if (!gym) {
     return null;
@@ -39,6 +47,39 @@ export default function TrainingRecorder({ gym, activeUserId, onUpdateSettingVal
                     <span className={styles.deviceMetaListItem}>
                       {t("devices.card.weightStackOption", { count: device.weightStackCount ?? 1 })}
                     </span>
+                    <span className={styles.deviceMetaListItem}>
+                      {(() => {
+                        const latestEntry = device.exercises.reduce((latest, exercise) => {
+                          const entries =
+                            exercise.trainingLog?.[device.tenantId]?.[activeUserId] ?? [];
+                          const current = entries[0]?.performedAt;
+
+                          if (!current) {
+                            return latest;
+                          }
+
+                          const currentTime = Date.parse(current);
+
+                          if (Number.isNaN(currentTime)) {
+                            return latest;
+                          }
+
+                          if (!latest) {
+                            return current;
+                          }
+
+                          return Date.parse(latest) < currentTime ? current : latest;
+                        }, null);
+
+                        if (!latestEntry) {
+                          return t("gym.training.deviceLastPerformedNever");
+                        }
+
+                        return t("gym.training.deviceLastPerformed", {
+                          timestamp: formatDateTime(latestEntry, i18n.language)
+                        });
+                      })()}
+                    </span>
                   </div>
                 </div>
               </header>
@@ -48,6 +89,8 @@ export default function TrainingRecorder({ gym, activeUserId, onUpdateSettingVal
                   {device.exercises.map((exercise) => {
                     const tenantValues = exercise.settingsValues?.[device.tenantId] ?? {};
                     const currentValues = tenantValues[activeUserId] ?? {};
+                    const trainingEntries =
+                      exercise.trainingLog?.[device.tenantId]?.[activeUserId] ?? [];
 
                     return (
                       <li key={exercise.id} className={styles.exerciseItem}>
@@ -88,6 +131,23 @@ export default function TrainingRecorder({ gym, activeUserId, onUpdateSettingVal
                             ))}
                           </div>
                         )}
+
+                        <ExerciseSetRecorder
+                          idPrefix={`set-${device.id}-${exercise.id}`}
+                          weightStackCount={device.weightStackCount ?? 1}
+                          entries={trainingEntries}
+                          onRecord={(loads, repetitions, unit) =>
+                            onRecordExerciseSet(
+                              gym.id,
+                              device.id,
+                              exercise.id,
+                              loads,
+                              repetitions,
+                              unit,
+                              activeUserId
+                            )
+                          }
+                        />
                       </li>
                     );
                   })}
@@ -105,29 +165,43 @@ TrainingRecorder.propTypes = {
   gym: PropTypes.shape({
     id: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-      devices: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.string.isRequired,
-          name: PropTypes.string.isRequired,
-          tenantId: PropTypes.string.isRequired,
-          exercises: PropTypes.arrayOf(
-            PropTypes.shape({
-              id: PropTypes.string.isRequired,
-              name: PropTypes.string.isRequired,
-              settingsValues: PropTypes.objectOf(PropTypes.object)
-            })
-          ).isRequired,
-          weightStackCount: PropTypes.number.isRequired,
-          settingsDefinitions: PropTypes.arrayOf(
-            PropTypes.shape({
-              id: PropTypes.string.isRequired,
-              name: PropTypes.string.isRequired
-            })
-          ).isRequired
-        })
-      ).isRequired
+    devices: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        tenantId: PropTypes.string.isRequired,
+        exercises: PropTypes.arrayOf(
+          PropTypes.shape({
+            id: PropTypes.string.isRequired,
+            name: PropTypes.string.isRequired,
+            settingsValues: PropTypes.objectOf(PropTypes.object),
+            trainingLog: PropTypes.objectOf(
+              PropTypes.objectOf(
+                PropTypes.arrayOf(
+                  PropTypes.shape({
+                    id: PropTypes.string.isRequired,
+                    performedAt: PropTypes.string.isRequired,
+                    loads: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired,
+                    repetitions: PropTypes.number.isRequired,
+                    unit: PropTypes.oneOf(["kg", "lb"])
+                  })
+                )
+              )
+            )
+          })
+        ).isRequired,
+        weightStackCount: PropTypes.number.isRequired,
+        settingsDefinitions: PropTypes.arrayOf(
+          PropTypes.shape({
+            id: PropTypes.string.isRequired,
+            name: PropTypes.string.isRequired
+          })
+        ).isRequired
+      })
+    ).isRequired
   }),
   activeUserId: PropTypes.string.isRequired,
   onUpdateSettingValue: PropTypes.func.isRequired,
+  onRecordExerciseSet: PropTypes.func.isRequired,
   onOpenManagement: PropTypes.func.isRequired
 };

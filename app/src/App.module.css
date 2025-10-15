@@ -781,6 +781,66 @@ body {
   text-align: right;
 }
 
+.exerciseLogSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.lastPerformedLabel {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.92);
+}
+
+.trainingForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.trainingFields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.trainingFormActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.trainingHistorySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.trainingHistoryTitle {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.trainingHistory {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.trainingHistoryItem {
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.78);
+}
+
 
 .settingsPanel {
   width: min(720px, calc(100% - 3rem));

@@ -189,6 +189,117 @@ describe("App", () => {
     expect(screen.getByLabelText(/übung 1/i)).toHaveValue("Wide grip pulldown");
   });
 
+  it("records exercise sets for a device and prefills the last values", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
+
+    const deviceNameInput = screen.getByLabelText(/gerätename/i);
+    const exerciseInput = screen.getByLabelText(/erste übung/i);
+
+    await user.type(deviceNameInput, "Leg Press");
+    await user.type(exerciseInput, "Single set");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+
+    const weightInput = await screen.findByLabelText(/gewichtsblock 1/i);
+    const unitSelect = screen.getByLabelText(/gewichtseinheit/i);
+    const repetitionsInput = screen.getByLabelText(/wiederholungen/i);
+
+    expect(unitSelect).toHaveValue("kg");
+
+    await user.clear(weightInput);
+    await user.type(weightInput, "50");
+    await user.clear(repetitionsInput);
+    await user.type(repetitionsInput, "12");
+    await user.click(screen.getByRole("button", { name: /satz speichern/i }));
+
+    expect(await screen.findByText(/letzter satz:/i)).toBeVisible();
+    expect(screen.getAllByText(/zuletzt trainiert:/i).length).toBeGreaterThan(0);
+
+    const historyEntry = await screen.findByText(/12 wdh\./i);
+    expect(historyEntry).toHaveTextContent(/50/);
+    expect(historyEntry).toHaveTextContent(/kg/i);
+
+    expect(weightInput).toHaveValue(50);
+    expect(repetitionsInput).toHaveValue(12);
+
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(storageKey()));
+      expect(stored).not.toBeNull();
+
+      const storedGym = stored.workspace.gyms.find((gym) => gym.name === "Pulse Arena");
+      expect(storedGym).toBeTruthy();
+
+      const storedDevice = storedGym.devices.find((device) => device.name === "Leg Press");
+      expect(storedDevice).toBeTruthy();
+
+      const storedExercise = storedDevice?.exercises[0];
+      expect(storedExercise).toBeTruthy();
+
+      const storedEntry =
+        storedExercise?.trainingLog?.["tenant-default"]?.["primary-user"]?.[0];
+      expect(storedEntry).toBeTruthy();
+      expect(storedEntry.unit).toBe("kg");
+    });
+  });
+
+  it("lets coaches switch the weight unit for exercise sets", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
+
+    const deviceNameInput = screen.getByLabelText(/gerätename/i);
+    const exerciseInput = screen.getByLabelText(/erste übung/i);
+
+    await user.type(deviceNameInput, "Cable Tower");
+    await user.type(exerciseInput, "Face pull");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+
+    const weightInput = await screen.findByLabelText(/gewichtsblock 1/i);
+    const unitSelect = screen.getByLabelText(/gewichtseinheit/i);
+    const repetitionsInput = screen.getByLabelText(/wiederholungen/i);
+
+    await user.selectOptions(unitSelect, "lb");
+    await user.clear(weightInput);
+    await user.type(weightInput, "110");
+    await user.clear(repetitionsInput);
+    await user.type(repetitionsInput, "8");
+    await user.click(screen.getByRole("button", { name: /satz speichern/i }));
+
+    const historyEntry = await screen.findByText(/8 wdh\./i);
+    expect(historyEntry).toHaveTextContent(/110/);
+    expect(historyEntry).toHaveTextContent(/lb/i);
+
+    expect(weightInput).toHaveValue(110);
+    expect(repetitionsInput).toHaveValue(8);
+    expect(unitSelect).toHaveValue("lb");
+
+    await waitFor(() => {
+      const stored = JSON.parse(window.localStorage.getItem(storageKey()));
+      expect(stored).not.toBeNull();
+
+      const storedGym = stored.workspace.gyms.find((gym) => gym.name === "Pulse Arena");
+      expect(storedGym).toBeTruthy();
+
+      const storedDevice = storedGym.devices.find((device) => device.name === "Cable Tower");
+      expect(storedDevice).toBeTruthy();
+
+      const storedExercise = storedDevice?.exercises[0];
+      expect(storedExercise).toBeTruthy();
+
+      const storedEntry =
+        storedExercise?.trainingLog?.["tenant-default"]?.["primary-user"]?.[0];
+      expect(storedEntry).toBeTruthy();
+      expect(storedEntry.unit).toBe("lb");
+    });
+  });
+
   it("allows adopting a device from the library into another gym", async () => {
     renderApp();
     const user = userEvent.setup();

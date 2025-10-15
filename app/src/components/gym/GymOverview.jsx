@@ -9,7 +9,8 @@ export default function GymOverview({
   activeUserId,
   onOpenManagement,
   onBackToSelection,
-  onUpdateSettingValue
+  onUpdateSettingValue,
+  onRecordExerciseSet
 }) {
   const { t } = useTranslation();
 
@@ -42,6 +43,7 @@ export default function GymOverview({
         gym={gym}
         activeUserId={activeUserId}
         onUpdateSettingValue={onUpdateSettingValue}
+        onRecordExerciseSet={onRecordExerciseSet}
         onOpenManagement={onOpenManagement}
       />
     </section>
@@ -58,5 +60,6 @@ GymOverview.propTypes = {
   activeUserId: PropTypes.string.isRequired,
   onOpenManagement: PropTypes.func.isRequired,
   onBackToSelection: PropTypes.func.isRequired,
-  onUpdateSettingValue: PropTypes.func.isRequired
+  onUpdateSettingValue: PropTypes.func.isRequired,
+  onRecordExerciseSet: PropTypes.func.isRequired
 };

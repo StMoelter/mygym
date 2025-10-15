@@ -35,13 +35,15 @@ export function instantiateDevice(template) {
         ? template.exercises.map((exercise) => ({
             id: exercise.id,
             name: exercise.name,
-            settingsValues: {}
+            settingsValues: {},
+            trainingLog: {}
           }))
         : [
             {
               id: generateId("exercise"),
               name: template.name,
-              settingsValues: {}
+              settingsValues: {},
+              trainingLog: {}
             }
           ]
   };

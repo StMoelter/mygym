@@ -10,7 +10,8 @@ export default function GymOverview({
   onOpenManagement,
   onBackToSelection,
   onUpdateSettingValue,
-  onRecordExerciseSet
+  onRecordExerciseSet,
+  onOpenExerciseInsights
 }) {
   const { t } = useTranslation();
 
@@ -45,6 +46,7 @@ export default function GymOverview({
         onUpdateSettingValue={onUpdateSettingValue}
         onRecordExerciseSet={onRecordExerciseSet}
         onOpenManagement={onOpenManagement}
+        onOpenExerciseInsights={onOpenExerciseInsights}
       />
     </section>
   );
@@ -61,5 +63,6 @@ GymOverview.propTypes = {
   onOpenManagement: PropTypes.func.isRequired,
   onBackToSelection: PropTypes.func.isRequired,
   onUpdateSettingValue: PropTypes.func.isRequired,
-  onRecordExerciseSet: PropTypes.func.isRequired
+  onRecordExerciseSet: PropTypes.func.isRequired,
+  onOpenExerciseInsights: PropTypes.func.isRequired
 };

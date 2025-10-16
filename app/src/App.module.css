@@ -263,6 +263,10 @@ body {
   gap: 1rem;
 }
 
+.managementListHeader > *:last-child {
+  margin-left: auto;
+}
+
 .managerHeader {
   display: flex;
   flex-direction: column;
@@ -356,6 +360,25 @@ body {
   background: rgba(148, 163, 184, 0.22);
   color: #e2e8f0;
   border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.tertiaryAction {
+  background: rgba(148, 163, 184, 0.12);
+  color: rgba(226, 232, 240, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tertiaryAction:hover,
+.tertiaryAction:focus-visible {
+  background: rgba(148, 163, 184, 0.22);
+  border-color: rgba(148, 163, 184, 0.45);
 }
 
 .secondaryAction:hover,
@@ -767,7 +790,11 @@ body {
   flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
+}
+
+.exerciseHeader h5 {
+  margin: 0;
 }
 
 .valuesGrid {
@@ -937,4 +964,138 @@ body {
   .deviceBadges {
     justify-content: flex-start;
   }
+}
+
+.userOverviewLayout {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 980px) {
+  .userOverviewLayout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+}
+
+.userOverviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.userOverviewListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.userExerciseList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.userExerciseButton {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 1rem;
+  padding: 0.85rem 1.1rem;
+  color: inherit;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.userExerciseButton:hover,
+.userExerciseButton:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.5);
+  box-shadow: 0 12px 30px -20px rgba(56, 189, 248, 0.6);
+}
+
+.userExerciseButtonActive {
+  border-color: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 18px 40px -28px rgba(56, 189, 248, 0.7);
+}
+
+.userExerciseName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.userExerciseMeta {
+  font-size: 0.85rem;
+  color: rgba(148, 163, 184, 0.85);
+}
+
+.userOverviewDetail {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 1.35rem;
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  background: rgba(15, 23, 42, 0.7);
+  box-shadow: 0 20px 45px -35px rgba(30, 64, 175, 0.75);
+}
+
+.userOverviewDetailHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.userOverviewDetailHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #f8fafc;
+}
+
+.userOverviewDetailSubtitle {
+  margin: 0;
+  color: rgba(148, 163, 184, 0.85);
+  font-size: 0.9rem;
+}
+
+.userOverviewDetailContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.userOverviewHighlight {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.userOverviewHistory {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.userOverviewHistory h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(226, 232, 240, 0.88);
+}
+
+.userOverviewHistory ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  color: rgba(203, 213, 225, 0.88);
+  font-size: 0.88rem;
 }

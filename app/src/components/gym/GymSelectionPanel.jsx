@@ -2,9 +2,16 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "../../App.module.css";
+import { formatDateTime } from "../../utils/datetime.js";
 
-export default function GymSelectionPanel({ gyms, selectedGymId, onAddGym, onSelectGym }) {
-  const { t } = useTranslation();
+export default function GymSelectionPanel({
+  gyms,
+  selectedGymId,
+  onAddGym,
+  onSelectGym,
+  onOpenUserOverview
+}) {
+  const { t, i18n } = useTranslation();
   const [draftName, setDraftName] = useState("");
 
   const summary = t("home.list.summary", { count: gyms.length });
@@ -35,6 +42,11 @@ export default function GymSelectionPanel({ gyms, selectedGymId, onAddGym, onSel
         <div className={styles.managementListHeader}>
           <h3>{t("home.list.title")}</h3>
           <p className={styles.managerSummary}>{summary}</p>
+          {typeof onOpenUserOverview === "function" ? (
+            <button type="button" className={styles.secondaryAction} onClick={onOpenUserOverview}>
+              {t("home.list.openOverview")}
+            </button>
+          ) : null}
         </div>
 
         {gyms.length === 0 ? (
@@ -44,6 +56,11 @@ export default function GymSelectionPanel({ gyms, selectedGymId, onAddGym, onSel
             {gyms.map((gym) => {
               const isLastVisited = gym.id === selectedGymId;
               const deviceSummary = t("home.card.devices", { count: gym.devices.length });
+              const lastPerformedLabel = gym.lastPerformedAt
+                ? t("home.card.lastSession", {
+                    timestamp: formatDateTime(gym.lastPerformedAt, i18n.language)
+                  })
+                : t("home.card.lastSessionNever");
 
               return (
                 <li key={gym.id} className={`${styles.gymCard} ${isLastVisited ? styles.gymCardSelected : ""}`}>
@@ -51,6 +68,7 @@ export default function GymSelectionPanel({ gyms, selectedGymId, onAddGym, onSel
                     <div className={styles.cardTitleGroup}>
                       <h4>{gym.name}</h4>
                       <span className={styles.cardMeta}>{deviceSummary}</span>
+                      <span className={styles.cardMeta}>{lastPerformedLabel}</span>
                       {isLastVisited ? (
                         <span className={styles.statusBadge}>{t("home.card.lastVisited")}</span>
                       ) : null}
@@ -96,10 +114,12 @@ GymSelectionPanel.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
-      devices: PropTypes.array.isRequired
+      devices: PropTypes.array.isRequired,
+      lastPerformedAt: PropTypes.string
     })
   ).isRequired,
   selectedGymId: PropTypes.string,
   onAddGym: PropTypes.func.isRequired,
-  onSelectGym: PropTypes.func.isRequired
+  onSelectGym: PropTypes.func.isRequired,
+  onOpenUserOverview: PropTypes.func
 };

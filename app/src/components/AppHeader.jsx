@@ -2,7 +2,13 @@ import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 import styles from "../App.module.css";
 
-export default function AppHeader({ displayName, isSettingsOpen, onToggleSettings }) {
+export default function AppHeader({
+  displayName,
+  isSettingsOpen,
+  onToggleSettings,
+  onOpenUserOverview,
+  isUserOverviewActive
+}) {
   const { t } = useTranslation();
 
   return (
@@ -15,6 +21,14 @@ export default function AppHeader({ displayName, isSettingsOpen, onToggleSetting
         </div>
         <div className={styles.profileBadge}>
           <span className={styles.greeting}>{t("hero.greeting", { name: displayName })}</span>
+          <button
+            type="button"
+            className={`${styles.secondaryAction}`}
+            onClick={onOpenUserOverview}
+            aria-pressed={isUserOverviewActive}
+          >
+            {t("navigation.openUserOverview")}
+          </button>
           <button
             type="button"
             className={`${styles.settingsButton} ${styles.secondaryAction}`}
@@ -33,5 +47,7 @@ export default function AppHeader({ displayName, isSettingsOpen, onToggleSetting
 AppHeader.propTypes = {
   displayName: PropTypes.string.isRequired,
   isSettingsOpen: PropTypes.bool.isRequired,
-  onToggleSettings: PropTypes.func.isRequired
+  onToggleSettings: PropTypes.func.isRequired,
+  onOpenUserOverview: PropTypes.func.isRequired,
+  isUserOverviewActive: PropTypes.bool.isRequired
 };

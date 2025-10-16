@@ -19,20 +19,24 @@
       "summary_zero": "Noch keine Gyms gespeichert",
       "summary_one": "{{count}} Gym gespeichert",
       "summary_other": "{{count}} Gyms gespeichert",
-      "empty": "Noch keine Gyms angelegt. Lege deinen ersten Standort an, um zu starten."
+      "empty": "Noch keine Gyms angelegt. Lege deinen ersten Standort an, um zu starten.",
+      "openOverview": "Übungsübersicht öffnen"
     },
     "card": {
       "devices_zero": "Noch keine Geräte vorbereitet",
       "devices_one": "{{count}} Gerät vorbereitet",
       "devices_other": "{{count}} Geräte vorbereitet",
       "lastVisited": "Zuletzt geöffnet",
+      "lastSession": "Letzter Satz: {{timestamp}}",
+      "lastSessionNever": "Noch keine Sätze dokumentiert",
       "open": "Gym öffnen"
     }
   },
   "navigation": {
     "backToGyms": "Zur Standortauswahl",
     "openManagement": "Gym verwalten",
-    "backToGym": "Zur Trainingsübersicht"
+    "backToGym": "Zur Trainingsübersicht",
+    "openUserOverview": "Übungsübersicht"
   },
   "gym": {
     "overview": {
@@ -58,8 +62,36 @@
       "repetitionsLabel": "Wiederholungen",
       "submit": "Satz speichern",
       "historyTitle": "Letzte Sätze",
-      "historyEntry": "{{timestamp}} · {{repetitions}} Wdh. · {{weights}} {{unit}}"
+      "historyEntry": "{{timestamp}} · {{repetitions}} Wdh. · {{weights}} {{unit}}",
+      "openInsights": "Details anzeigen"
       }
+    }
+  },
+  "userOverview": {
+    "overline": "Trainingsarchiv",
+    "title": "Deine dokumentierten Übungen",
+    "lead": "Überprüfe letzte Sätze, entdecke Bestleistungen und springe direkt ins passende Gym.",
+    "summary_zero": "Noch keine Übungen dokumentiert",
+    "summary_one": "{{count}} Übung dokumentiert",
+    "summary_other": "{{count}} Übungen dokumentiert",
+    "listTitle": "Erfasste Übungen",
+    "filterLabel": "Einträge filtern",
+    "filterPlaceholder": "Nach Übung, Gym oder Gerät suchen",
+    "empty": "Keine Übungen passen zum aktuellen Filter.",
+    "openCurrentGym": "{{name}} öffnen",
+    "openGym": "{{name}} öffnen",
+    "detail": {
+      "title": "{{exercise}}",
+      "emptyTitle": "Übung auswählen",
+      "emptySubtitle": "Wähle links eine Übung aus, um deren Verlauf zu sehen.",
+      "lastPerformed": "Letzter Satz am {{timestamp}} · {{weights}} {{unit}}",
+      "lastPerformedNever": "Für diese Übung wurden noch keine Sätze gespeichert.",
+      "personalBest": "Bestleistung: {{weights}} {{unit}}",
+      "setCount_zero": "Noch keine Sätze dokumentiert",
+      "setCount_one": "{{count}} Satz dokumentiert",
+      "setCount_other": "{{count}} Sätze dokumentiert",
+      "recentSets": "Jüngste Sätze",
+      "historyEntry": "{{timestamp}} · {{repetitions}} Wdh. · {{weights}} {{unit}}"
     }
   },
   "managementPage": {

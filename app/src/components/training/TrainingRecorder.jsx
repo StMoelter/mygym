@@ -9,7 +9,8 @@ export default function TrainingRecorder({
   activeUserId,
   onUpdateSettingValue,
   onRecordExerciseSet,
-  onOpenManagement
+  onOpenManagement,
+  onOpenExerciseInsights
 }) {
   const { t, i18n } = useTranslation();
 
@@ -96,6 +97,15 @@ export default function TrainingRecorder({
                       <li key={exercise.id} className={styles.exerciseItem}>
                         <div className={styles.exerciseHeader}>
                           <h5>{exercise.name}</h5>
+                          <button
+                            type="button"
+                            className={styles.tertiaryAction}
+                            onClick={() =>
+                              onOpenExerciseInsights(gym.id, device.id, exercise.id)
+                            }
+                          >
+                            {t("gym.training.log.openInsights")}
+                          </button>
                         </div>
 
                         {device.settingsDefinitions.length === 0 ? (
@@ -203,5 +213,6 @@ TrainingRecorder.propTypes = {
   activeUserId: PropTypes.string.isRequired,
   onUpdateSettingValue: PropTypes.func.isRequired,
   onRecordExerciseSet: PropTypes.func.isRequired,
-  onOpenManagement: PropTypes.func.isRequired
+  onOpenManagement: PropTypes.func.isRequired,
+  onOpenExerciseInsights: PropTypes.func.isRequired
 };

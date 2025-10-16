@@ -6,9 +6,15 @@ import SettingsPanel from "./components/SettingsPanel.jsx";
 import GymManagementPanel from "./components/gym/GymManagementPanel.jsx";
 import GymOverview from "./components/gym/GymOverview.jsx";
 import GymSelectionPanel from "./components/gym/GymSelectionPanel.jsx";
+import UserTrainingOverview from "./components/training/UserTrainingOverview.jsx";
 import { useWorkspaceActions } from "./hooks/useWorkspaceActions.js";
 import { createInitialWorkspace, loadWorkspace, saveWorkspace } from "./storage/gymStorage.js";
 import { loadUser, saveUser } from "./storage/userStorage.js";
+import {
+  collectUserExerciseSummaries,
+  createExerciseKey,
+  deriveGymActivity
+} from "./utils/trainingStats.js";
 
 const initialGyms = [
   { id: "pulse-arena", name: "Pulse Arena" },
@@ -26,6 +32,7 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [profile, setProfile] = useState(() => loadUser(DEFAULT_USER));
   const [activeView, setActiveView] = useState("home");
+  const [focusedExerciseKey, setFocusedExerciseKey] = useState(null);
 
   const gyms = workspace.gyms;
   const selectedGymId = workspace.selectedGymId ?? (gyms[0]?.id ?? null);
@@ -34,8 +41,51 @@ export default function App() {
     [gyms, selectedGymId]
   );
 
-  const workspaceActions = useWorkspaceActions(setWorkspace, DEFAULT_TENANT_ID);
   const activeUserId = profile?.id ?? DEFAULT_USER.id;
+
+  const exerciseSummaries = useMemo(
+    () => collectUserExerciseSummaries(gyms, activeUserId),
+    [gyms, activeUserId]
+  );
+  const gymActivity = useMemo(() => deriveGymActivity(exerciseSummaries), [exerciseSummaries]);
+  const sortedGyms = useMemo(() => {
+    const gymsWithIndex = gyms.map((gym, index) => ({
+      ...gym,
+      lastPerformedAt: gymActivity[gym.id]?.lastPerformedAt ?? null,
+      originalIndex: index
+    }));
+
+    gymsWithIndex.sort((left, right) => {
+        const leftTime = left.lastPerformedAt ? Date.parse(left.lastPerformedAt) : Number.NaN;
+        const rightTime = right.lastPerformedAt ? Date.parse(right.lastPerformedAt) : Number.NaN;
+
+        if (!Number.isNaN(leftTime) && !Number.isNaN(rightTime)) {
+          if (rightTime !== leftTime) {
+            return rightTime - leftTime;
+          }
+
+          return left.originalIndex - right.originalIndex;
+        }
+
+        if (!Number.isNaN(leftTime)) {
+          return -1;
+        }
+
+        if (!Number.isNaN(rightTime)) {
+          return 1;
+        }
+
+        return left.originalIndex - right.originalIndex;
+      });
+
+    return gymsWithIndex.map((gym) => {
+      const result = { ...gym };
+      delete result.originalIndex;
+      return result;
+    });
+  }, [gyms, gymActivity]);
+
+  const workspaceActions = useWorkspaceActions(setWorkspace, DEFAULT_TENANT_ID);
 
   useLayoutEffect(() => {
     saveWorkspace(workspace);
@@ -78,6 +128,18 @@ export default function App() {
     updateSettingValue,
     recordExerciseSet
   } = workspaceActions;
+
+  useEffect(() => {
+    if (!focusedExerciseKey) {
+      return;
+    }
+
+    const exists = exerciseSummaries.some((summary) => summary.key === focusedExerciseKey);
+
+    if (!exists) {
+      setFocusedExerciseKey(null);
+    }
+  }, [exerciseSummaries, focusedExerciseKey]);
 
   const handleToggleSettings = useCallback(() => {
     setIsSettingsOpen((state) => !state);
@@ -137,12 +199,39 @@ export default function App() {
     setActiveView("home");
   }, []);
 
+  const handleOpenUserOverview = useCallback(() => {
+    setActiveView("user-overview");
+  }, []);
+
+  const handleSelectExerciseSummary = useCallback((exerciseKey) => {
+    setFocusedExerciseKey(exerciseKey);
+  }, []);
+
+  const handleOpenExerciseInsights = useCallback(
+    (gymId, deviceId, exerciseId) => {
+      const key = createExerciseKey(gymId, deviceId, exerciseId);
+      setFocusedExerciseKey(key);
+      setActiveView("user-overview");
+    },
+    []
+  );
+
+  const handleOpenGymFromOverview = useCallback(
+    (gymId) => {
+      selectGym(gymId);
+      setActiveView("gym");
+    },
+    [selectGym]
+  );
+
   return (
     <div className={styles.appShell}>
       <AppHeader
         displayName={displayName}
         isSettingsOpen={isSettingsOpen}
         onToggleSettings={handleToggleSettings}
+        onOpenUserOverview={handleOpenUserOverview}
+        isUserOverviewActive={activeView === "user-overview"}
       />
 
       {isSettingsOpen ? (
@@ -159,10 +248,11 @@ export default function App() {
       <main className={styles.content}>
         {activeView === "home" ? (
           <GymSelectionPanel
-            gyms={gyms}
+            gyms={sortedGyms}
             selectedGymId={selectedGymId ?? undefined}
             onAddGym={handleAddGym}
             onSelectGym={handleSelectGym}
+            onOpenUserOverview={handleOpenUserOverview}
           />
         ) : null}
 
@@ -175,6 +265,7 @@ export default function App() {
             onBackToSelection={handleBackToSelection}
             onUpdateSettingValue={updateSettingValue}
             onRecordExerciseSet={recordExerciseSet}
+            onOpenExerciseInsights={handleOpenExerciseInsights}
           />
         ) : null}
 
@@ -199,6 +290,18 @@ export default function App() {
             onRenameExercise={renameExercise}
             onRemoveExercise={removeExercise}
             onUpdateSettingValue={updateSettingValue}
+          />
+        ) : null}
+
+        {activeView === "user-overview" ? (
+          <UserTrainingOverview
+            summaries={exerciseSummaries}
+            selectedExerciseKey={focusedExerciseKey}
+            onSelectExercise={handleSelectExerciseSummary}
+            onBackToGyms={handleBackToSelection}
+            onOpenGym={handleOpenGymFromOverview}
+            currentGymId={selectedGymId}
+            currentGymName={selectedGym?.name ?? ""}
           />
         ) : null}
       </main>

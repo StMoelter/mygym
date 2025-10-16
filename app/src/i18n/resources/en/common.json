@@ -19,20 +19,24 @@
       "summary_zero": "No gyms saved yet",
       "summary_one": "{{count}} gym saved",
       "summary_other": "{{count}} gyms saved",
-      "empty": "No gyms captured yet. Create your first location to get started."
+      "empty": "No gyms captured yet. Create your first location to get started.",
+      "openOverview": "Open training overview"
     },
     "card": {
       "devices_zero": "No devices prepared yet",
       "devices_one": "{{count}} device prepared",
       "devices_other": "{{count}} devices prepared",
       "lastVisited": "Last opened",
+      "lastSession": "Last session: {{timestamp}}",
+      "lastSessionNever": "No sessions recorded yet",
       "open": "Open gym"
     }
   },
   "navigation": {
     "backToGyms": "Back to gym list",
     "openManagement": "Manage gym",
-    "backToGym": "Back to training"
+    "backToGym": "Back to training",
+    "openUserOverview": "Training overview"
   },
   "gym": {
     "overview": {
@@ -58,8 +62,36 @@
       "repetitionsLabel": "Repetitions",
       "submit": "Save set",
       "historyTitle": "Recent sets",
-      "historyEntry": "{{timestamp}} · {{repetitions}} reps · {{weights}} {{unit}}"
+      "historyEntry": "{{timestamp}} · {{repetitions}} reps · {{weights}} {{unit}}",
+      "openInsights": "View details"
       }
+    }
+  },
+  "userOverview": {
+    "overline": "Performance archive",
+    "title": "Your recorded exercises",
+    "lead": "Review the latest sets, find personal bests, and jump back into any gym with one click.",
+    "summary_zero": "No exercises recorded yet",
+    "summary_one": "{{count}} exercise tracked",
+    "summary_other": "{{count}} exercises tracked",
+    "listTitle": "Logged exercises",
+    "filterLabel": "Filter entries",
+    "filterPlaceholder": "Search by exercise, gym, or device",
+    "empty": "No exercises match the current filter.",
+    "openCurrentGym": "Open {{name}}",
+    "openGym": "Open {{name}}",
+    "detail": {
+      "title": "{{exercise}}",
+      "emptyTitle": "Select an exercise",
+      "emptySubtitle": "Pick an exercise on the left to see its history.",
+      "lastPerformed": "Last set on {{timestamp}} · {{weights}} {{unit}}",
+      "lastPerformedNever": "No sets saved for this exercise yet.",
+      "personalBest": "Personal best: {{weights}} {{unit}}",
+      "setCount_zero": "No sets recorded yet",
+      "setCount_one": "{{count}} set recorded",
+      "setCount_other": "{{count}} sets recorded",
+      "recentSets": "Recent sets",
+      "historyEntry": "{{timestamp}} · {{repetitions}} reps · {{weights}} {{unit}}"
     }
   },
   "managementPage": {

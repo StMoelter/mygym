@@ -405,6 +405,110 @@ describe("App", () => {
     }
   });
 
+  it("sorts gyms by the most recent recorded session", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await openManagement(user, "Iron Haven");
+
+    await user.type(screen.getByLabelText(/gerätename/i), "Leg Extension");
+    await user.type(screen.getByLabelText(/erste übung/i), "Extensions");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+
+    const weightInput = await screen.findByLabelText(/gewichtsblock 1/i);
+    const repetitionsInput = screen.getByLabelText(/wiederholungen/i);
+
+    await user.clear(weightInput);
+    await user.type(weightInput, "45");
+    await user.clear(repetitionsInput);
+    await user.type(repetitionsInput, "10");
+    await user.click(screen.getByRole("button", { name: /satz speichern/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur standortauswahl/i }));
+
+    const gymHeadings = await screen.findAllByRole("heading", { level: 4 });
+    expect(gymHeadings[0]).toHaveTextContent(/iron haven/i);
+    expect(gymHeadings[1]).toHaveTextContent(/pulse arena/i);
+  });
+
+  it("provides a user exercise overview with filter and insights", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
+
+    await user.type(screen.getByLabelText(/gerätename/i), "Cable Row");
+    await user.type(screen.getByLabelText(/erste übung/i), "Seated row");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+
+    const weightInput = await screen.findByLabelText(/gewichtsblock 1/i);
+    const repetitionsInput = screen.getByLabelText(/wiederholungen/i);
+
+    await user.clear(weightInput);
+    await user.type(weightInput, "52");
+    await user.clear(repetitionsInput);
+    await user.type(repetitionsInput, "12");
+    await user.click(screen.getByRole("button", { name: /satz speichern/i }));
+
+    await user.click(screen.getByRole("button", { name: /übungsübersicht/i }));
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: /deine dokumentierten übungen/i })
+    ).toBeVisible();
+
+    const filterInput = screen.getByLabelText(/einträge filtern/i);
+    await user.type(filterInput, "row");
+
+    const exerciseButton = await screen.findByRole("button", { name: /seated row/i });
+    await user.click(exerciseButton);
+
+    expect(await screen.findByText(/letzter satz am/i)).toBeVisible();
+    expect(screen.getByText(/bestleistung: 52 kg/i)).toBeVisible();
+
+    await user.clear(filterInput);
+    await user.type(filterInput, "unbekannt");
+    expect(await screen.findByText(/keine übungen passen/i)).toBeVisible();
+  });
+
+  it("opens the training overview from an exercise insight shortcut", async () => {
+    renderApp();
+    const user = userEvent.setup();
+
+    await openManagement(user, "Pulse Arena");
+
+    await user.type(screen.getByLabelText(/gerätename/i), "Dual Cable");
+    await user.type(screen.getByLabelText(/erste übung/i), "Face pull");
+    await user.click(screen.getByRole("button", { name: /gerät hinzufügen/i }));
+
+    await user.click(screen.getByRole("button", { name: /zur trainingsübersicht/i }));
+
+    const weightInput = await screen.findByLabelText(/gewichtsblock 1/i);
+    const repetitionsInput = screen.getByLabelText(/wiederholungen/i);
+
+    await user.clear(weightInput);
+    await user.type(weightInput, "18");
+    await user.clear(repetitionsInput);
+    await user.type(repetitionsInput, "15");
+    await user.click(screen.getByRole("button", { name: /satz speichern/i }));
+
+    const exerciseHeading = await screen.findByRole("heading", { level: 5, name: /face pull/i });
+    const exerciseItem = exerciseHeading.closest("li");
+    expect(exerciseItem).not.toBeNull();
+
+    if (exerciseItem) {
+      await user.click(within(exerciseItem).getByRole("button", { name: /details anzeigen/i }));
+    }
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: /deine dokumentierten übungen/i })
+    ).toBeVisible();
+    expect(await screen.findByText(/letzter satz am/i)).toBeVisible();
+  });
+
   it("only exposes German as a selectable language", async () => {
     renderApp();
     const user = userEvent.setup();
